@@ -1,0 +1,78 @@
+name: Build & Release Antimatter
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version tag (e.g. v1.0.0)'
+        required: false
+        default: ''
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    name: Run Automated Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci || npm install
+
+      - name: Run test suite
+        run: npm test
+
+  build-and-release:
+    name: Build & Publish Release
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci || npm install
+
+      - name: Build multi-platform executables
+        run: |
+          npm run build:linux
+          npm run build:mac
+          npm run build:win
+
+      - name: Compress release archives
+        run: |
+          mkdir -p dist
+          tar -czf dist/antimatter-linux-x64.tar.gz -C bin antimatter-linux-x64
+          tar -czf dist/antimatter-macos-arm64.tar.gz -C bin antimatter-macos-arm64
+          zip -j dist/antimatter-windows-x64.zip bin/antimatter-windows-x64.exe
+          ls -lh dist/
+
+      - name: Create GitHub Release and Upload Artifacts
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+        with:
+          tag_name: ${{ github.event.inputs.version || github.ref_name }}
+          name: Antimatter ${{ github.event.inputs.version || github.ref_name }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: |
+            dist/antimatter-linux-x64.tar.gz
+            dist/antimatter-macos-arm64.tar.gz
+            dist/antimatter-windows-x64.zip
