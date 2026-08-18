@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+
+# Secrets & Environment Variables
+.secret.json
+.env
+.env.*
+
+# TLS Certificates & Keys (Local mkcert and Tailscale)
+cert.pem
+key.pem
+*.crt
+*.key
+*.pem
+
+# Binaries & Executables
+bin/
+dist/
+antimatter
+antimatter.exe
+mkcert
+mkcert.exe
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS & Editor Metadata
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
