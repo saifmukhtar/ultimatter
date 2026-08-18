@@ -1,13 +1,15 @@
 # 🚀 Ultimate Antimatter Bridge
 
-The **Ultimate Antimatter Bridge** is a low-latency, cryptographically secure HTTP/2 reverse proxy and gateway that bridges the **Antigravity IDE** on your PC natively to your mobile device or tablet.
+The **Ultimate Antimatter Bridge** is a low-latency, cryptographically secure HTTP/2 reverse proxy and desktop gateway that bridges your local AI coding agents directly to your phone, tablet, or browser with **100% true 1:1 desktop feature parity**.
 
-By multiplexing network traffic over high-performance **HTTP/2**, Antimatter bypasses mobile browser connection limits, giving you desktop-class speed, instant file tree browsing, zero UI lag, and native touchscreen responsiveness.
+By multiplexing network traffic over high-performance **HTTP/2**, Antimatter eliminates connection bottlenecks, giving you desktop-class speed, instant file tree browsing, zero UI lag, and full touchscreen responsiveness.
 
 ---
 
 ## ✨ Features
 
+* **💯 100% 1:1 Desktop Parity Out-of-the-Box:** Access full IDE settings, model selection, reasoning thought process, subagents, MCP tools, file editor, and terminal natively without the limitations and bugs of emulated mobile clones.
+* **📱 PWA Standalone Mode (Add to Home Screen):** Turns into a true full-screen mobile app on iOS and Android with zero browser address bar clutter.
 * **⚡ HTTP/2 Multiplexing:** Eliminates mobile browser connection bottlenecks and UI freezes.
 * **🪟 Standalone Desktop GUI:** Double-clicking the binary automatically launches a dedicated, distraction-free control panel window.
 * **🌐 Dual Connection Modes:**
@@ -18,6 +20,17 @@ By multiplexing network traffic over high-performance **HTTP/2**, Antimatter byp
 * **🔄 Single-Instance Lifecycle:** Running or double-clicking the app again instantly re-opens your control panel without interrupting your active phone session.
 * **🛡️ Enterprise Security:** 256-bit cryptographic access tokens, HMAC-SHA256 signed session cookies, and in-memory rate limiting against brute-force attacks.
 * **🔍 Dynamic IDE Auto-Discovery:** Silently watches for the Antigravity IDE language server port and hot-reconnects automatically.
+
+---
+
+## 📱 PWA Superpower (Add to Home Screen)
+
+You don't need to install custom APKs or wait for App Store reviews. For a true native, full-screen mobile app experience:
+
+* **iOS (Safari):** Open your Antimatter QR link $\rightarrow$ Tap the **Share** icon $\rightarrow$ Select **"Add to Home Screen"**.
+* **Android (Chrome / Brave):** Open your Antimatter QR link $\rightarrow$ Tap the **Menu (⋮)** $\rightarrow$ Select **"Install App"** or **"Add to Home screen"**.
+
+This runs the full desktop interface in dedicated full-screen mode with native mobile gestures and zero browser URL bar distractions!
 
 ---
 
@@ -43,6 +56,21 @@ A dedicated control panel window will pop open on your desktop (`http://localhos
 1. Choose **🏠 Local Wi-Fi** or **🌍 Tailscale MagicDNS** on the dashboard.
 2. Scan the displayed vector QR code with your phone camera or browser.
 3. Code with full desktop speed on your mobile device!
+
+---
+
+## 🗺️ Universal Multi-Agent Roadmap
+
+Antimatter is expanding into the **Universal Mobile Gateway for ALL AI Desktop Agents**:
+
+| AI Agent / IDE | Integration Mode | Status |
+| :--- | :--- | :---: |
+| **Google Antigravity (`ag` / `ag2`)** | Native Web Workbench Proxy & Auto-discovery | ✅ **Supported** |
+| **Cursor IDE** | Web Workbench Port Proxy (`--serve-web`) | 🚧 **In Development** |
+| **Claude Code (`claude`)** | Embedded Touch-Friendly Web Terminal (`xterm.js`) | 🚧 **In Development** |
+| **Windsurf & OpenCode** | Web Remote IDE Tunneling | 📅 **Planned** |
+| **Aider & OpenHands** | Local Web UI Multi-Device Gateway | 📅 **Planned** |
+| **Multi-Agent Target Selector** | 1-Click Agent Switcher inside Desktop GUI | 📅 **Planned** |
 
 ---
 
