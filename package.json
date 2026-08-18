@@ -1,0 +1,28 @@
+{
+  "name": "ultimate-antimatter",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "build": "npx @yao-pkg/pkg index.js --output bin/antimatter --targets node22-linux-x64",
+    "build:linux": "npx @yao-pkg/pkg index.js --output bin/antimatter-linux-x64 --targets node22-linux-x64",
+    "build:mac": "npx @yao-pkg/pkg index.js --output bin/antimatter-macos-arm64 --targets node22-macos-arm64",
+    "build:win": "npx @yao-pkg/pkg index.js --output bin/antimatter-windows-x64.exe --targets node22-win-x64",
+    "build:all": "npm run build:linux && npm run build:mac && npm run build:win",
+    "pack:release": "tar -czf bin/antimatter-linux-x64.tar.gz -C bin antimatter",
+    "test": "NODE_ENV=test node --test test/*.test.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "http-proxy": "^1.18.1",
+    "qrcode": "^1.5.4"
+  },
+  "pkg": {
+    "assets": [
+      "assets/**/*"
+    ]
+  }
+}
