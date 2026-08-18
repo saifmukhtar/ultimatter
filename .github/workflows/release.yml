@@ -1,4 +1,4 @@
-name: Build & Release Antimatter
+name: Build & Release Ultimatter
 
 on:
   workflow_dispatch:
@@ -58,9 +58,9 @@ jobs:
       - name: Compress release archives
         run: |
           mkdir -p dist
-          tar -czf dist/antimatter-linux-x64.tar.gz -C bin antimatter-linux-x64
-          tar -czf dist/antimatter-macos-arm64.tar.gz -C bin antimatter-macos-arm64
-          zip -j dist/antimatter-windows-x64.zip bin/antimatter-windows-x64.exe
+          tar -czf dist/ultimatter-linux-x64.tar.gz -C bin ultimatter-linux-x64
+          tar -czf dist/ultimatter-macos-arm64.tar.gz -C bin ultimatter-macos-arm64
+          zip -j dist/ultimatter-windows-x64.zip bin/ultimatter-windows-x64.exe
           ls -lh dist/
 
       - name: Create GitHub Release and Upload Artifacts
@@ -68,11 +68,11 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
         with:
           tag_name: ${{ github.event.inputs.version || github.ref_name }}
-          name: Antimatter ${{ github.event.inputs.version || github.ref_name }}
+          name: Ultimatter ${{ github.event.inputs.version || github.ref_name }}
           draft: false
           prerelease: false
           generate_release_notes: true
           files: |
-            dist/antimatter-linux-x64.tar.gz
-            dist/antimatter-macos-arm64.tar.gz
-            dist/antimatter-windows-x64.zip
+            dist/ultimatter-linux-x64.tar.gz
+            dist/ultimatter-macos-arm64.tar.gz
+            dist/ultimatter-windows-x64.zip

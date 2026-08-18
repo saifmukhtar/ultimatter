@@ -16,8 +16,8 @@ key.pem
 # Binaries & Executables
 bin/
 dist/
-antimatter
-antimatter.exe
+ultimatter
+ultimatter.exe
 mkcert
 mkcert.exe
 

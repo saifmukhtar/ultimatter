@@ -21,7 +21,7 @@ test('Dashboard Module - Vector SVG QR and HTML Generator', async (t) => {
   await t.test('getDashboardHtml produces valid HTML document', () => {
     const html = dashboard.getDashboardHtml();
     assert.strictEqual(html.includes('<!DOCTYPE html>'), true);
-    assert.strictEqual(html.includes('Antimatter Control Panel'), true);
+    assert.strictEqual(html.includes('Ultimatter Control Panel'), true);
     assert.strictEqual(html.includes('id="tabTailscale"'), true);
   });
 });

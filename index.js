@@ -7,14 +7,14 @@ const args = process.argv.slice(2);
 // Handle CLI help flag
 if (args.includes('--help') || args.includes('-h')) {
   console.log(`
-🚀 Ultimate Antimatter Bridge
+🚀 Ultimatter
 
 Usage:
-  antimatter [options]
+  ultimatter [options]
 
 Options:
-  --headless       Run bridge in background without launching a desktop GUI window
-  -v, --version    Print Antimatter version and exit
+  --headless       Run in background without launching a desktop GUI window
+  -v, --version    Print Ultimatter version and exit
   -h, --help       Show this help message and exit
 `);
   process.exit(0);
@@ -30,7 +30,7 @@ if (args.includes('--version') || args.includes('-v')) {
 const isHeadless = args.includes('--headless');
 
 /**
- * Checks if another Antimatter process is already running in the background
+ * Checks if another Ultimatter process is already running in the background
  * by probing the local dashboard status endpoint.
  * 
  * @returns {Promise<boolean>} True if another instance is already running
@@ -68,7 +68,7 @@ const startBridge = async () => {
 
     // 1. Single-Instance Re-Opener
     if (isRunning) {
-      console.log(`\n🚀 Antimatter is already active in background.`);
+      console.log(`\n🚀 Ultimatter is already active in background.`);
       if (!isHeadless) {
         console.log(`Re-opening Control Panel in desktop window...\n`);
         network.openBrowser(dashboardUrl);
@@ -103,7 +103,7 @@ const startBridge = async () => {
       console.log(`⚙️  Headless Mode: Desktop GUI window will not open automatically.`);
     }
   } catch (err) {
-    console.error("❌ Antimatter Startup Failed:", err.message);
+    console.error("❌ Ultimatter Startup Failed:", err.message);
     process.exit(1);
   }
 };

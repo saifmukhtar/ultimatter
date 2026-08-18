@@ -1,8 +1,8 @@
-# 🚀 Ultimate Antimatter Bridge
+# 🚀 Ultimatter
 
-The **Ultimate Antimatter Bridge** is a low-latency, cryptographically secure HTTP/2 reverse proxy and desktop gateway that bridges your local AI coding agents directly to your phone, tablet, or browser with **100% true 1:1 desktop feature parity**.
+**Ultimatter** is a low-latency, cryptographically secure HTTP/2 reverse proxy and desktop gateway that bridges your local AI coding agents directly to your phone, tablet, or browser with **100% true 1:1 desktop feature parity**.
 
-By multiplexing network traffic over high-performance **HTTP/2**, Antimatter eliminates connection bottlenecks, giving you desktop-class speed, instant file tree browsing, zero UI lag, and full touchscreen responsiveness.
+By multiplexing network traffic over high-performance **HTTP/2**, Ultimatter eliminates connection bottlenecks, giving you desktop-class speed, instant file tree browsing, zero UI lag, and full touchscreen responsiveness.
 
 ---
 
@@ -19,7 +19,7 @@ By multiplexing network traffic over high-performance **HTTP/2**, Antimatter eli
 * **📲 1-Click Root CA Installation:** Direct button on the dashboard to install `rootCA.pem` onto iOS/Android for a permanent green padlock on local Wi-Fi.
 * **🔄 Single-Instance Lifecycle:** Running or double-clicking the app again instantly re-opens your control panel without interrupting your active phone session.
 * **🛡️ Enterprise Security:** 256-bit cryptographic access tokens, HMAC-SHA256 signed session cookies, and in-memory rate limiting against brute-force attacks.
-* **🔍 Dynamic IDE Auto-Discovery:** Silently watches for the Antigravity IDE language server port and hot-reconnects automatically.
+* **🔍 Dynamic IDE Auto-Discovery:** Silently watches for the active AI agent / IDE port and hot-reconnects automatically.
 
 ---
 
@@ -27,8 +27,8 @@ By multiplexing network traffic over high-performance **HTTP/2**, Antimatter eli
 
 You don't need to install custom APKs or wait for App Store reviews. For a true native, full-screen mobile app experience:
 
-* **iOS (Safari):** Open your Antimatter QR link $\rightarrow$ Tap the **Share** icon $\rightarrow$ Select **"Add to Home Screen"**.
-* **Android (Chrome / Brave):** Open your Antimatter QR link $\rightarrow$ Tap the **Menu (⋮)** $\rightarrow$ Select **"Install App"** or **"Add to Home screen"**.
+* **iOS (Safari):** Open your Ultimatter QR link $\rightarrow$ Tap the **Share** icon $\rightarrow$ Select **"Add to Home Screen"**.
+* **Android (Chrome / Brave):** Open your Ultimatter QR link $\rightarrow$ Tap the **Menu (⋮)** $\rightarrow$ Select **"Install App"** or **"Add to Home screen"**.
 
 This runs the full desktop interface in dedicated full-screen mode with native mobile gestures and zero browser URL bar distractions!
 
@@ -40,7 +40,7 @@ This runs the full desktop interface in dedicated full-screen mode with native m
 Simply run (or double-click) the compiled executable:
 
 ```bash
-./bin/antimatter
+./bin/ultimatter
 ```
 
 A dedicated control panel window will pop open on your desktop (`http://localhost:5865/dashboard`).
@@ -48,8 +48,8 @@ A dedicated control panel window will pop open on your desktop (`http://localhos
 ### CLI Options:
 | Flag | Description |
 | :--- | :--- |
-| `--headless` | Run bridge in background without launching a desktop GUI window |
-| `-v`, `--version` | Print Antimatter version (`v1.0.0`) and exit |
+| `--headless` | Run in background without launching a desktop GUI window |
+| `-v`, `--version` | Print Ultimatter version (`v1.0.0`) and exit |
 | `-h`, `--help` | Show CLI help message and exit |
 
 ### 2. Connect Your Phone
@@ -61,7 +61,7 @@ A dedicated control panel window will pop open on your desktop (`http://localhos
 
 ## 🗺️ Universal Multi-Agent Roadmap
 
-Antimatter is expanding into the **Universal Mobile Gateway for ALL AI Desktop Agents**:
+Ultimatter is expanding into the **Universal Mobile Gateway for ALL AI Desktop Agents**:
 
 | AI Agent / IDE | Integration Mode | Status |
 | :--- | :--- | :---: |
@@ -76,18 +76,18 @@ Antimatter is expanding into the **Universal Mobile Gateway for ALL AI Desktop A
 
 ## 🧪 Automated Testing
 
-Antimatter includes a zero-dependency automated test suite using Node's native test runner (`node:test`):
+Ultimatter includes a zero-dependency automated test suite using Node's native test runner (`node:test`):
 
 ```bash
 npm test
 ```
-Executes unit tests across Authentication, IP Rate Limiting, Path Configurations, and Vector QR Code Generation in <250ms.
+Executes 21 unit tests across Authentication, IP Rate Limiting, Path Configurations, and Vector QR Code Generation in <200ms with zero warnings.
 
 ---
 
 ## 📦 Zero-Dependency Architecture
 
-Antimatter is packaged as a completely self-contained binary:
+Ultimatter is packaged as a completely self-contained binary:
 
 | Component | Status | Description |
 | :--- | :--- | :--- |
@@ -107,12 +107,15 @@ You can build standalone binaries for Linux, macOS, and Windows:
 npm run build
 
 # Build specific platform binaries
-npm run build:linux   # -> bin/antimatter-linux-x64
-npm run build:mac     # -> bin/antimatter-macos-arm64
-npm run build:win     # -> bin/antimatter-windows-x64.exe
+npm run build:linux   # -> bin/ultimatter-linux-x64
+npm run build:mac     # -> bin/ultimatter-macos-arm64
+npm run build:win     # -> bin/ultimatter-windows-x64.exe
 
 # Build all platforms at once
 npm run build:all
+
+# Package release archive (.tar.gz)
+npm run pack:release
 ```
 
 ---
