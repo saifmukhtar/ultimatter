@@ -56,10 +56,10 @@ test('Config Module - Path Resolutions and Permissions', async (t) => {
     assert.strictEqual(Array.isArray(tsState.peers), true);
   });
 
-  await t.test('AGENT_TARGETS contains unified definitions for Antigravity, OpenCode, Claude, and Cursor', () => {
+  await t.test('AGENT_TARGETS contains unified definitions for Antigravity and OpenCode', () => {
     const network = require('../lib/network');
     assert.strictEqual(Array.isArray(network.AGENT_TARGETS), true);
-    assert.strictEqual(network.AGENT_TARGETS.length >= 4, true);
+    assert.strictEqual(network.AGENT_TARGETS.length, 2);
 
     const antigravity = network.AGENT_TARGETS.find(t => t.id === 'antigravity');
     assert.ok(antigravity);
@@ -71,14 +71,6 @@ test('Config Module - Path Resolutions and Permissions', async (t) => {
     assert.strictEqual(opencode.protocol, 'http');
     assert.strictEqual(opencode.defaultPort, 4096);
     assert.strictEqual(opencode.processPattern, 'opencode');
-
-    const claude = network.AGENT_TARGETS.find(t => t.id === 'claude');
-    assert.ok(claude);
-    assert.strictEqual(claude.type, 'terminal');
-
-    const cursor = network.AGENT_TARGETS.find(t => t.id === 'cursor');
-    assert.ok(cursor);
-    assert.strictEqual(cursor.type, 'terminal');
   });
 
   await t.test('hub module generates valid HTML document with agent cards', () => {
