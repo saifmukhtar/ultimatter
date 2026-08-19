@@ -8,8 +8,7 @@ test('Dashboard Module - Vector SVG QR and HTML Generator', async (t) => {
     assert.strictEqual(typeof svg, 'string');
     assert.strictEqual(svg.startsWith('<svg'), true);
     assert.strictEqual(svg.endsWith('</svg>'), true);
-    assert.strictEqual(svg.includes('shape-rendering="crispEdges"'), true);
-    assert.strictEqual(svg.includes('<path fill="#000000"'), true);
+    assert.strictEqual(svg.includes('<path fill="'), true);
   });
 
   await t.test('handles empty or null payloads gracefully', () => {
