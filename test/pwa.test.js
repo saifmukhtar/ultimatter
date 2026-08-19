@@ -8,7 +8,7 @@ test('PWA Module - Web App Manifest & Meta Tags', async (t) => {
     assert.strictEqual(typeof manifest, 'object');
     assert.strictEqual(manifest.name, 'Ultimatter');
     assert.strictEqual(manifest.display, 'standalone');
-    assert.strictEqual(manifest.start_url, '/');
+    assert.strictEqual(manifest.start_url, '/hub');
     assert.strictEqual(Array.isArray(manifest.icons), true);
     assert.strictEqual(manifest.icons.length > 0, true);
     assert.strictEqual(manifest.icons[0].src, '/icon.svg');
