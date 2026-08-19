@@ -6,20 +6,56 @@ By multiplexing network traffic over high-performance **HTTP/2**, Ultimatter eli
 
 ---
 
+## 🏗️ Decoupled Zero-Touch Architecture
+
+Ultimatter is **100% architecturally decoupled and fully detached** from the Antigravity IDE and other coding agents. It requires **zero plugins, zero extensions, and zero modifications to the IDE codebase on disk**.
+
+```
+┌───────────────────────────┐         ┌───────────────────────────┐
+│     📱 Mobile Phone       │         │    🚀 ULTIMATTER          │
+│   (Safari / Chrome PWA)   │         │ (Standalone Daemon Proxy) │
+└─────────────┬─────────────┘         └─────────────┬─────────────┘
+              │                                     │
+              │ 🔒 HTTPS / HTTP/2 (Port 5864)       │
+              └────────────────────────────────────►│
+                                                    │ 1. 256-bit Cryptographic Auth
+                                                    │ 2. Scans OS for active port
+                                                    │ 3. Proxies WebSockets & HTTP/2
+                                                    ▼
+                                      ┌───────────────────────────┐
+                                      │   💻 ANTIGRAVITY IDE      │
+                                      │  (Local Language Server)  │
+                                      │   e.g. 127.0.0.1:45981    │
+                                      └───────────────────────────┘
+```
+
+### 🔍 How Decoupling Works:
+
+1. **OS-Level Socket Auto-Discovery ([`lib/network.js`](lib/network.js)):**  
+   Ultimatter queries OS-level listening sockets (`ss -tlnp` on Linux, `lsof` on macOS, `Get-NetTCPConnection` on Windows) to automatically discover the dynamic port of any listening `language_server` process on localhost (e.g. `45981`).
+2. **Transparent Outer Proxying ([`lib/proxy.js`](lib/proxy.js)):**  
+   Ultimatter acts as an external secure gateway on port `5864`. It authenticates mobile connections, attaches 30-day cryptographic session cookies, and forwards raw HTTP/2 and WebSocket traffic to the local IDE language server.
+3. **Works Even When the IDE is Closed:**  
+   If Ultimatter is running while the IDE is offline, it serves a lightweight holding page on your phone that auto-reconnects as soon as the IDE process launches.
+4. **Update-Proof & Crash-Resistant:**  
+   Because Ultimatter never alters the IDE's binaries or files, IDE updates and restarts will never break your mobile connection.
+
+---
+
 ## ✨ Features
 
-* **💯 100% 1:1 Desktop Parity Out-of-the-Box:** Access full IDE settings, model selection, reasoning thought process, subagents, MCP tools, file editor, and terminal natively without the limitations and bugs of emulated mobile clones.
-* **📱 PWA Standalone Mode (Add to Home Screen):** Turns into a true full-screen mobile app on iOS and Android with zero browser address bar clutter.
-* **⚡ HTTP/2 Multiplexing:** Eliminates mobile browser connection bottlenecks and UI freezes.
-* **🪟 Standalone Desktop GUI:** Double-clicking the binary automatically launches a dedicated, distraction-free control panel window.
-* **🌐 Dual Connection Modes:**
-  * **🏠 Local Wi-Fi:** Instant speed on your local network using pre-bundled `mkcert v1.4.4` TLS certificates.
-  * **🌍 Tailscale MagicDNS:** Global P2P WireGuard connectivity via your `*.ts.net` domain with native Let's Encrypt TLS certificates (100% trusted green padlock on mobile).
-* **🧭 Interactive Tailscale Smart Guide:** Real-time OS-specific guide for Linux, macOS, and Windows with 1-click command copying.
-* **📲 1-Click Root CA Installation:** Direct button on the dashboard to install `rootCA.pem` onto iOS/Android for a permanent green padlock on local Wi-Fi.
-* **🔄 Single-Instance Lifecycle:** Running or double-clicking the app again instantly re-opens your control panel without interrupting your active phone session.
-* **🛡️ Enterprise Security:** 256-bit cryptographic access tokens, HMAC-SHA256 signed session cookies, and in-memory rate limiting against brute-force attacks.
-* **🔍 Dynamic IDE Auto-Discovery:** Silently watches for the active AI agent / IDE port and hot-reconnects automatically.
+* **💯 100% 1:1 Desktop Parity Out-of-the-Box:** Access full IDE settings, model selection, reasoning thought process, subagents, MCP tools, file editor, and terminal natively without the limitations and bugs of mobile clones.
+* **📱 True Standalone PWA Engine:** Injects Apple & Android web app meta tags for a true full-screen mobile app experience with zero browser address bar clutter.
+* **🕊️ Minimal & Elegant Light Dashboard:** Clean Apple/Stripe-inspired interface with real-time telemetry, live status radar, and responsive controls.
+* **🔀 Local Wi-Fi Dual Selector:**
+  * **📍 Direct IP (Universal):** Instant zero-configuration connection on all Android and iOS devices.
+  * **🏷️ .local Domain (Persistent):** Customizable mDNS hostname (`ultramarine.local`) with inline rename support and platform guidance for Apple (Bonjour native) and Android (Private DNS).
+* **🌍 Tailscale MagicDNS:** Global P2P WireGuard connectivity via your `*.ts.net` domain with native Let's Encrypt TLS certificates (100% trusted green padlock on mobile over 5G).
+* **🛡️ Remote Access Switch (LAN Lockdown):** 1-click toggle to pause incoming Tailscale connections and restrict Ultimatter to local Wi-Fi only.
+* **🔄 Instant Session Revocation:** 1-click token reset button that invalidates all active session cookies across all connected phones.
+* **⚡ 20-Attempt Rate Limiter & 1-Click Unban:** Advanced brute-force firewall with 1-second burst debouncing and a 1-click unban button in the desktop UI.
+* **📲 1-Click Root CA Installation:** Direct dashboard download of `rootCA.pem` for permanent local Wi-Fi green padlock trust on iOS and Android.
+* **🔍 Dynamic Port Auto-Discovery:** Silently watches for active IDE port changes and hot-reconnects automatically.
 
 ---
 
@@ -61,7 +97,7 @@ A dedicated control panel window will pop open on your desktop (`http://localhos
 
 ## 🗺️ Universal Multi-Agent Roadmap
 
-Ultimatter is expanding into the **Universal Mobile Gateway for ALL AI Desktop Agents**:
+Ultimatter is designed as the **Universal Mobile Gateway for ALL AI Desktop Agents**:
 
 | AI Agent / IDE | Integration Mode | Status |
 | :--- | :--- | :---: |
@@ -81,7 +117,7 @@ Ultimatter includes a zero-dependency automated test suite using Node's native t
 ```bash
 npm test
 ```
-Executes 21 unit tests across Authentication, IP Rate Limiting, Path Configurations, and Vector QR Code Generation in <200ms with zero warnings.
+Executes **32 unit tests** across Authentication, Cryptographic Expiry, IP Rate Limiting, PWA Manifest, Path Configurations, and Vector QR Code Generation in <250ms with zero warnings.
 
 ---
 
@@ -94,7 +130,7 @@ Ultimatter is packaged as a completely self-contained binary:
 | **Node.js Runtime** | ✅ Built-in | Embedded inside the standalone executable. |
 | **Local TLS (`mkcert`)** | ✅ Built-in | Official `v1.4.4` binaries pre-compressed for Linux, macOS, and Windows. |
 | **Vector QR Code Engine** | ✅ Built-in | Real-time SVG vector rendering. |
-| **Web Control Panel** | ✅ Built-in | Embedded dark-mode UI with live status polling. |
+| **Web Control Panel** | ✅ Built-in | Embedded light-mode UI with live status polling. |
 
 ---
 
