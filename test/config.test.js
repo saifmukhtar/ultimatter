@@ -97,4 +97,23 @@ test('Config Module - Path Resolutions and Permissions', async (t) => {
     const emptyHtml = hub.getHubHtml(network.AGENT_TARGETS, [], 'test-token');
     assert.strictEqual(emptyHtml.includes('Waiting for Desktop Agents'), true);
   });
+
+  await t.test('config module manages mobile bubble preference', () => {
+    try {
+      // Default should be false
+      assert.strictEqual(config.getBubbleEnabled(), false);
+
+      // Enable and verify
+      config.setBubbleEnabled(true);
+      assert.strictEqual(config.getBubbleEnabled(), true);
+
+      // Disable and verify
+      config.setBubbleEnabled(false);
+      assert.strictEqual(config.getBubbleEnabled(), false);
+    } finally {
+      if (fs.existsSync(config.SETTINGS_FILE)) {
+        fs.unlinkSync(config.SETTINGS_FILE);
+      }
+    }
+  });
 });
