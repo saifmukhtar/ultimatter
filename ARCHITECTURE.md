@@ -37,8 +37,8 @@ Ultimatter is built on the **Zero-Touch Outer Gateway** pattern:
 │  └──────────────────────────┬────────────────────────────┘  │
 │                             │                               │
 │  ┌──────────────────────────▼────────────────────────────┐  │
-│  │            OS-Level Socket Auto-Discovery             │  │
-│  │     (Polls ss / lsof / Get-NetTCPConnection)          │  │
+│  │     OS-Level Socket Discovery & Two-Stage Probing     │  │
+│  │     (Polls ss / lsof / PowerShell + HTTPS Probe)      │  │
 │  └──────────────────────────┬────────────────────────────┘  │
 └─────────────────────────────┼───────────────────────────────┘
                               │
@@ -58,7 +58,7 @@ Ultimatter is built on the **Zero-Touch Outer Gateway** pattern:
 | :--- | :--- | :--- |
 | **CLI & Lifecycle** | [`index.js`](index.js) | CLI argument parsing, single-instance lock, and process daemonization. |
 | **Reverse Proxy Core** | [`lib/proxy.js`](lib/proxy.js) | HTTP/2 secure server, SNI certificate router, WebSocket upgrade tunnels, and response transformation. |
-| **Network & Discovery** | [`lib/network.js`](lib/network.js) | OS listening socket inspection, local mDNS resolver, Tailscale state machine, and embedded `mkcert` runner. |
+| **Network & Discovery** | [`lib/network.js`](lib/network.js) | OS listening socket inspection, HTTPS validation probe, local mDNS resolver, and embedded `mkcert` runner. |
 | **Cryptographic Auth** | [`lib/auth.js`](lib/auth.js) | 256-bit secure token generator, HMAC-SHA256 cookie signer, and chronological expiry verification. |
 | **Security Firewall** | [`lib/security.js`](lib/security.js) | Brute-force rate limiter, 1-second burst debouncing, dual-stack IP normalizer, and instant unban registry. |
 | **PWA & Stream Shim** | [`lib/pwa.js`](lib/pwa.js) | Manifest generator, SVG vector icon pipeline, and `<head>` network online shim. |
@@ -69,18 +69,20 @@ Ultimatter is built on the **Zero-Touch Outer Gateway** pattern:
 
 ## 3. Deep Dive: Key Subsystems
 
-### A. OS-Level Socket Auto-Discovery ([`lib/network.js`](lib/network.js))
-Instead of requiring hardcoded ports or IDE plugins, Ultimatter inspects the operating system's kernel socket tables:
-* **Linux:** `ss -tlnp | grep language_server`
-* **macOS:** `lsof -iTCP -sTCP:LISTEN -P -n | grep language_server`
-* **Windows:** `Get-NetTCPConnection` via PowerShell matching process names.
+### A. Two-Stage OS Socket Auto-Discovery ([`lib/network.js`](lib/network.js))
+Instead of requiring hardcoded ports or IDE plugins, Ultimatter uses a robust **two-stage verification pipeline**:
+1. **Stage 1 (Kernel Socket Scanning):** Ultimatter queries OS-level listening sockets for active `language_server` processes:
+   * **Linux:** `ss -tlnp | grep language_server`
+   * **macOS:** `lsof -iTCP -sTCP:LISTEN -P -n | grep language_server`
+   * **Windows:** `Get-NetTCPConnection` via PowerShell matching process names.
+2. **Stage 2 (Active HTTPS Validation Probe):** Candidate ports are actively probed with an HTTPS handshake (`checkPortIsIde`). This strictly distinguishes the AI agent's web workbench from raw TCP language servers (such as `rust-analyzer`, `gopls`, or `pyright`), eliminating false positives.
 
-When candidate ports are found, Ultimatter sends an HTTPS probe to `https://127.0.0.1:<port>/`. Once confirmed, the proxy updates its active upstream target dynamically without dropping client connections.
+When validated, Ultimatter hot-updates its proxy target dynamically without dropping active client connections.
 
 ---
 
-### B. Dual-Channel Transport & Dynamic SNI Multiplexing ([`lib/proxy.js`](lib/proxy.js))
-Ultimatter binds a single HTTPS / HTTP/2 server on port `5864` capable of serving both local Wi-Fi and global 5G connections seamlessly via **Server Name Indication (SNI)**:
+### B. Dual-Channel Transport & WebSocket Upgrade Tunneling ([`lib/proxy.js`](lib/proxy.js))
+Ultimatter binds a unified port `5864` supporting both local Wi-Fi and global 5G connections seamlessly via **Server Name Indication (SNI)**:
 
 ```
                           ┌──────────────────────────┐
@@ -98,6 +100,9 @@ Ultimatter binds a single HTTPS / HTTP/2 server on port `5864` capable of servin
              │ (Native Let's Encrypt)  │   │ (IP & .local Hostnames) │
              └─────────────────────────┘   └─────────────────────────┘
 ```
+
+* **HTTP/2 Multiplexing:** Standard web requests, editor assets, and file trees stream concurrently over binary HTTP/2 frames.
+* **Raw WebSocket Duplex Tunnels:** Live language server event streams, real-time agent telemetry, and integrated terminals bypass HTTP/2 encapsulation via Node's `upgrade` event handler (`proxy.ws`) to establish raw, uninterrupted full-duplex TCP tunnels.
 
 ---
 
@@ -123,6 +128,14 @@ When the upstream IDE returns `Content-Type: text/html`, Ultimatter decompresses
 * **1-Second Burst Debouncing:** When a browser fires 10 parallel asset requests with an outdated token on page refresh, all attempts within 1000ms count as **1 single failed strike**.
 * **IP Normalization:** Strips IPv4-mapped IPv6 prefixes (`::ffff:`) to ensure uniform tracking.
 * **1-Click Unban:** `POST /api/dashboard/unban` allows instant lockout resolution via the desktop GUI.
+
+---
+
+### F. Zero-Dependency Standalone Packaging
+Ultimatter is compiled using `@yao-pkg/pkg` into a single standalone binary:
+* **Embedded Node.js Engine:** Embeds the Node.js v22 runtime directly inside the executable.
+* **Bundled mkcert Binaries:** Includes official `mkcert v1.4.4` platform binaries (`assets/mkcert-*`) that auto-extract to `~/.config/ultimatter/bin/` if not present on the host OS.
+* **Self-Contained Web GUI:** Embeds all HTML, CSS, vector SVG icons, and QR generators into the binary with zero external runtime dependencies.
 
 ---
 
