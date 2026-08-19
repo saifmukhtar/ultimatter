@@ -55,4 +55,21 @@ test('Config Module - Path Resolutions and Permissions', async (t) => {
     assert.strictEqual(['connected', 'stopped', 'not_installed'].includes(tsState.state), true);
     assert.strictEqual(Array.isArray(tsState.peers), true);
   });
+
+  await t.test('AGENT_TARGETS contains unified definitions for Antigravity and OpenCode', () => {
+    const network = require('../lib/network');
+    assert.strictEqual(Array.isArray(network.AGENT_TARGETS), true);
+    assert.strictEqual(network.AGENT_TARGETS.length >= 2, true);
+
+    const antigravity = network.AGENT_TARGETS.find(t => t.name === 'Antigravity');
+    assert.ok(antigravity);
+    assert.strictEqual(antigravity.protocol, 'https');
+    assert.strictEqual(antigravity.processPattern, 'language_server');
+
+    const opencode = network.AGENT_TARGETS.find(t => t.name === 'OpenCode');
+    assert.ok(opencode);
+    assert.strictEqual(opencode.protocol, 'http');
+    assert.strictEqual(opencode.defaultPort, 4096);
+    assert.strictEqual(opencode.processPattern, 'opencode');
+  });
 });

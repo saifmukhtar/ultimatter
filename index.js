@@ -91,9 +91,9 @@ const startBridge = async () => {
     // 4. Start Reverse Proxy (HTTP/2 on :5864, Local Dashboard on :5865)
     proxy.startProxy(localIp, validTailscaleDns);
 
-    // 5. Start Background IDE Port Discovery Watcher
-    network.watchIdePort((port) => {
-      proxy.updateTargetPort(port);
+    // 5. Start Background Agent Port Discovery Watcher
+    network.watchIdePort((target) => {
+      proxy.updateTarget(target);
     });
 
     // 6. Launch Standalone GUI Window on Desktop (unless running --headless)
