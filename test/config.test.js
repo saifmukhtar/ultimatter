@@ -24,6 +24,21 @@ test('Config Module - Path Resolutions and Permissions', async (t) => {
     assert.strictEqual(files.keyFile.endsWith('node.tailnet.ts.net.key'), true);
   });
 
+  await t.test('SETTINGS_FILE points inside CONFIG_DIR', () => {
+    assert.strictEqual(config.SETTINGS_FILE.startsWith(config.CONFIG_DIR), true);
+  });
+
+  await t.test('network module manages local mDNS domain', () => {
+    const network = require('../lib/network');
+    const domain = network.getLocalDomain();
+    assert.strictEqual(typeof domain, 'string');
+    assert.strictEqual(domain.endsWith('.local'), true);
+
+    const updated = network.setLocalDomain('test-host');
+    assert.strictEqual(updated, 'test-host.local');
+    assert.strictEqual(network.getLocalDomain(), 'test-host.local');
+  });
+
   await t.test('network module discovers IP and Tailscale state object', () => {
     const network = require('../lib/network');
     const localIp = network.getLocalIp();
