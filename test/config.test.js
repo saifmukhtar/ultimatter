@@ -84,12 +84,17 @@ test('Config Module - Path Resolutions and Permissions', async (t) => {
   await t.test('hub module generates valid HTML document with agent cards', () => {
     const hub = require('../lib/hub');
     const network = require('../lib/network');
-    const html = hub.getHubHtml(network.AGENT_TARGETS, [], 'test-token');
+    
+    // 1. Test active targets rendering
+    const activeHtml = hub.getHubHtml(network.AGENT_TARGETS, [network.AGENT_TARGETS[0], network.AGENT_TARGETS[1]], 'test-token');
+    assert.strictEqual(typeof activeHtml, 'string');
+    assert.strictEqual(activeHtml.includes('Ultimatter Hub'), true);
+    assert.strictEqual(activeHtml.includes('Google Antigravity'), true);
+    assert.strictEqual(activeHtml.includes('OpenCode'), true);
+    assert.strictEqual(activeHtml.includes('switchAgent'), true);
 
-    assert.strictEqual(typeof html, 'string');
-    assert.strictEqual(html.includes('Ultimatter Hub'), true);
-    assert.strictEqual(html.includes('Google Antigravity'), true);
-    assert.strictEqual(html.includes('OpenCode'), true);
-    assert.strictEqual(html.includes('switchAgent'), true);
+    // 2. Test empty state when 0 agents active
+    const emptyHtml = hub.getHubHtml(network.AGENT_TARGETS, [], 'test-token');
+    assert.strictEqual(emptyHtml.includes('Waiting for Desktop Agents'), true);
   });
 });
