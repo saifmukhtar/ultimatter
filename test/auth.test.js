@@ -44,4 +44,8 @@ test('Auth Module - Session Cookie Management', async (t) => {
     assert.strictEqual(auth.verifySessionCookie(''), false);
     assert.strictEqual(auth.verifySessionCookie(null), false);
   });
+
+  await t.test('exports 30-day cookie max age (2,592,000s)', () => {
+    assert.strictEqual(auth.COOKIE_MAX_AGE_SECONDS, 30 * 24 * 60 * 60);
+  });
 });
