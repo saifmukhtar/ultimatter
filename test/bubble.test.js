@@ -3,12 +3,17 @@ const assert = require('node:assert');
 const bubble = require('../lib/bubble');
 
 test('Bubble Module - Draggable Edge Bubble & Switcher Drawer', async (t) => {
-  await t.test('getBubbleSnippet returns valid HTML string with isolated root element', () => {
+  await t.test('getPortalScript and getBubbleSnippet return valid HTML/JS for CSP-compliant injection', () => {
+    const script = bubble.getPortalScript();
+    assert.strictEqual(typeof script, 'string');
+    assert.strictEqual(script.includes('ultimatter-portal'), true);
+    assert.strictEqual(script.includes('attachShadow'), true);
+    assert.strictEqual(script.includes('customElements.define'), true);
+
     const snippet = bubble.getBubbleSnippet();
     assert.strictEqual(typeof snippet, 'string');
     assert.strictEqual(snippet.includes('ultimatter-portal'), true);
-    assert.strictEqual(snippet.includes('attachShadow'), true);
-    assert.strictEqual(snippet.includes('customElements.define'), true);
+    assert.strictEqual(snippet.includes('/api/ultimatter-portal.js'), true);
   });
 
   await t.test('injectBubble inserts snippet before closing body tag', () => {
