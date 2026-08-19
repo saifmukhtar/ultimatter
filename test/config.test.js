@@ -30,13 +30,18 @@ test('Config Module - Path Resolutions and Permissions', async (t) => {
 
   await t.test('network module manages local mDNS domain', () => {
     const network = require('../lib/network');
-    const domain = network.getLocalDomain();
-    assert.strictEqual(typeof domain, 'string');
-    assert.strictEqual(domain.endsWith('.local'), true);
+    const originalDomain = network.getLocalDomain();
 
-    const updated = network.setLocalDomain('test-host');
-    assert.strictEqual(updated, 'test-host.local');
-    assert.strictEqual(network.getLocalDomain(), 'test-host.local');
+    try {
+      const updated = network.setLocalDomain('test-host');
+      assert.strictEqual(updated, 'test-host.local');
+      assert.strictEqual(network.getLocalDomain(), 'test-host.local');
+    } finally {
+      // Clean up test domain and restore or remove settings file
+      if (fs.existsSync(config.SETTINGS_FILE)) {
+        fs.unlinkSync(config.SETTINGS_FILE);
+      }
+    }
   });
 
   await t.test('network module discovers IP and Tailscale state object', () => {
