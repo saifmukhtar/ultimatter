@@ -54,6 +54,9 @@ test('Config Module - Path Resolutions and Permissions', async (t) => {
     assert.strictEqual(typeof tsState, 'object');
     assert.strictEqual(['connected', 'stopped', 'not_installed'].includes(tsState.state), true);
     assert.strictEqual(Array.isArray(tsState.peers), true);
+
+    const procPorts = network.getProcListeningPorts();
+    assert.strictEqual(Array.isArray(procPorts), true);
   });
 
   await t.test('AGENT_TARGETS contains unified definitions for Antigravity and OpenCode', () => {
