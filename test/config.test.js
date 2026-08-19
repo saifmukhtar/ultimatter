@@ -56,20 +56,40 @@ test('Config Module - Path Resolutions and Permissions', async (t) => {
     assert.strictEqual(Array.isArray(tsState.peers), true);
   });
 
-  await t.test('AGENT_TARGETS contains unified definitions for Antigravity and OpenCode', () => {
+  await t.test('AGENT_TARGETS contains unified definitions for Antigravity, OpenCode, Claude, and Cursor', () => {
     const network = require('../lib/network');
     assert.strictEqual(Array.isArray(network.AGENT_TARGETS), true);
-    assert.strictEqual(network.AGENT_TARGETS.length >= 2, true);
+    assert.strictEqual(network.AGENT_TARGETS.length >= 4, true);
 
-    const antigravity = network.AGENT_TARGETS.find(t => t.name === 'Antigravity');
+    const antigravity = network.AGENT_TARGETS.find(t => t.id === 'antigravity');
     assert.ok(antigravity);
     assert.strictEqual(antigravity.protocol, 'https');
     assert.strictEqual(antigravity.processPattern, 'language_server');
 
-    const opencode = network.AGENT_TARGETS.find(t => t.name === 'OpenCode');
+    const opencode = network.AGENT_TARGETS.find(t => t.id === 'opencode');
     assert.ok(opencode);
     assert.strictEqual(opencode.protocol, 'http');
     assert.strictEqual(opencode.defaultPort, 4096);
     assert.strictEqual(opencode.processPattern, 'opencode');
+
+    const claude = network.AGENT_TARGETS.find(t => t.id === 'claude');
+    assert.ok(claude);
+    assert.strictEqual(claude.type, 'terminal');
+
+    const cursor = network.AGENT_TARGETS.find(t => t.id === 'cursor');
+    assert.ok(cursor);
+    assert.strictEqual(cursor.type, 'terminal');
+  });
+
+  await t.test('hub module generates valid HTML document with agent cards', () => {
+    const hub = require('../lib/hub');
+    const network = require('../lib/network');
+    const html = hub.getHubHtml(network.AGENT_TARGETS, [], 'test-token');
+
+    assert.strictEqual(typeof html, 'string');
+    assert.strictEqual(html.includes('Ultimatter Hub'), true);
+    assert.strictEqual(html.includes('Google Antigravity'), true);
+    assert.strictEqual(html.includes('OpenCode'), true);
+    assert.strictEqual(html.includes('switchAgent'), true);
   });
 });
