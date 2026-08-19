@@ -92,8 +92,8 @@ const startBridge = async () => {
     proxy.startProxy(localIp, validTailscaleDns);
 
     // 5. Start Background Agent Port Discovery Watcher
-    network.watchIdePort((target) => {
-      proxy.updateTarget(target);
+    network.watchIdePort((targets) => {
+      proxy.updateTargets(targets);
     });
 
     // 6. Launch Standalone GUI Window on Desktop (unless running --headless)
