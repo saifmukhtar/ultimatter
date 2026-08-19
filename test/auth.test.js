@@ -48,4 +48,22 @@ test('Auth Module - Session Cookie Management', async (t) => {
   await t.test('exports 30-day cookie max age (2,592,000s)', () => {
     assert.strictEqual(auth.COOKIE_MAX_AGE_SECONDS, 30 * 24 * 60 * 60);
   });
+
+  await t.test('resetSecrets generates new token and invalidates old cookies', () => {
+    const oldCookie = auth.generateSessionCookie();
+    assert.strictEqual(auth.verifySessionCookie(oldCookie), true);
+
+    const oldToken = auth.SECURE_TOKEN;
+    const newToken = auth.resetSecrets();
+
+    assert.strictEqual(typeof newToken, 'string');
+    assert.strictEqual(newToken.length, 64);
+    assert.notStrictEqual(newToken, oldToken);
+    assert.strictEqual(auth.SECURE_TOKEN, newToken);
+    assert.strictEqual(auth.verifyToken(newToken), true);
+    assert.strictEqual(auth.verifyToken(oldToken), false);
+
+    // Old cookie signed with previous HMAC secret must fail immediately
+    assert.strictEqual(auth.verifySessionCookie(oldCookie), false);
+  });
 });
