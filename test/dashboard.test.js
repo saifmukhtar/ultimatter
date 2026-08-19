@@ -18,10 +18,18 @@ test('Dashboard Module - Vector SVG QR and HTML Generator', async (t) => {
     assert.strictEqual(dashboard.generateQrSvg(undefined), '');
   });
 
-  await t.test('getDashboardHtml produces valid HTML document', () => {
+  await t.test('getDashboardHtml produces valid HTML document with error-free JavaScript', () => {
+    const vm = require('vm');
     const html = dashboard.getDashboardHtml();
     assert.strictEqual(html.includes('<!DOCTYPE html>'), true);
     assert.strictEqual(html.includes('Ultimatter Control Panel'), true);
     assert.strictEqual(html.includes('id="tabTailscale"'), true);
+
+    const scriptMatch = html.match(/<script>([\s\S]*?)<\/script>/);
+    assert.strictEqual(!!scriptMatch, true);
+    // Parsing with new vm.Script throws if any syntax errors exist in browser JS
+    assert.doesNotThrow(() => {
+      new vm.Script(scriptMatch[1]);
+    });
   });
 });
