@@ -7,6 +7,9 @@
 
 ## ⚡ Quick Start (20 Seconds)
 
+> 📦 **Zero-Dependency Standalone Executable:** No Node.js, Python, or external runtime required. Everything is self-contained.  
+> 📥 **[Download Latest Binary from GitHub Releases](https://github.com/saifmukhtar/ultimatter/releases)** or build from source.
+
 ### 1. Launch Ultimatter
 ```bash
 ./bin/ultimatter
@@ -36,6 +39,7 @@ Ultimatter is **100% independent and detached** from your IDE:
 * 🔌 **Zero Plugins Required:** It does not modify, patch, or install anything inside your IDE files.
 * 🔍 **OS-Level Auto-Discovery:** Silently detects your agent's local port automatically.
 * 🛡️ **Crash & Update Proof:** Updating or restarting your IDE will never break your mobile connection.
+* 🏛️ **Full Details:** Read the complete [ARCHITECTURE.md](ARCHITECTURE.md) for in-depth design specifications.
 
 ---
 
