@@ -1,7 +1,7 @@
 # 🚀 Ultimatter
 
-> **Universal Mobile Gateway for AI Desktop Agents**  
-> Run your desktop AI agents directly on your phone with **100% true desktop parity** and zero latency.
+> **The Ultimate Mobile Gateway for Antigravity**  
+> Run Antigravity directly on your phone with **100% true desktop parity** and zero latency.
 
 ---
 
@@ -34,11 +34,11 @@ A sleek control panel will open on your desktop (`http://localhost:5865/dashboar
 
 ## 🏗️ Zero-Touch Decoupled Architecture
 
-Ultimatter is **100% independent and detached** from your IDE:
+Ultimatter is **100% independent and detached** from Antigravity:
 
-* 🔌 **Zero Plugins Required:** It does not modify, patch, or install anything inside your IDE files.
-* 🔍 **OS-Level Auto-Discovery:** Silently detects your agent's local port automatically.
-* 🛡️ **Crash & Update Proof:** Updating or restarting your IDE will never break your mobile connection.
+* 🔌 **Zero Plugins Required:** It does not modify, patch, or install anything inside Antigravity files on disk.
+* 🔍 **OS-Level Auto-Discovery:** Silently detects the active Antigravity port automatically.
+* 🛡️ **Crash & Update Proof:** Updating or restarting Antigravity will never break your mobile connection.
 * 🏛️ **Full Details:** Read the complete [ARCHITECTURE.md](ARCHITECTURE.md) for in-depth design specifications.
 
 ---

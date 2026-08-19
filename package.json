@@ -1,7 +1,7 @@
 {
   "name": "ultimatter",
   "version": "1.0.0",
-  "description": "The Universal Mobile Bridge for AI Coding Agents",
+  "description": "The Ultimate Mobile Gateway for Antigravity",
   "main": "index.js",
   "bin": "index.js",
   "scripts": {

@@ -1,6 +1,6 @@
 # 🏛️ Ultimatter Architecture Blueprint
 
-This document details the internal architecture, network engineering, and component interactions of **Ultimatter** — the universal, decoupled mobile gateway for AI desktop agents.
+This document details the internal architecture, network engineering, and component interactions of **Ultimatter** — the decoupled mobile gateway for Antigravity.
 
 ---
 
@@ -8,9 +8,9 @@ This document details the internal architecture, network engineering, and compon
 
 Ultimatter is built on the **Zero-Touch Outer Gateway** pattern:
 
-* **100% Decoupled:** Ultimatter does not patch, modify, or inject plugins into the AI agent or IDE on disk. It runs as an independent daemon in user space.
-* **Update-Proof:** Because Ultimatter communicates strictly over loopback TCP sockets (`127.0.0.1`), IDE updates, restarts, or crashes will never corrupt or break the mobile bridge.
-* **Universal Protocol Translation:** Converts modern mobile HTTP/2 requests from Safari and Chrome into the upstream language server's expected HTTP/1.1 and WebSocket formats.
+* **100% Decoupled:** Ultimatter does not patch, modify, or inject plugins into Antigravity on disk. It runs as an independent daemon in user space.
+* **Update-Proof:** Because Ultimatter communicates strictly over loopback TCP sockets (`127.0.0.1`), Antigravity updates, restarts, or crashes will never corrupt or break the mobile bridge.
+* **Seamless Protocol Translation:** Converts modern mobile HTTP/2 requests from Safari and Chrome into the upstream language server's expected HTTP/1.1 and WebSocket formats.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
