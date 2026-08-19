@@ -20,27 +20,34 @@ test('Auth Module - Token Verification', async (t) => {
 });
 
 test('Auth Module - Session Cookie Management', async (t) => {
-  await t.test('generates valid signed session cookie', () => {
+  await t.test('generates valid signed session cookie with timestamp', () => {
     const cookie = auth.generateSessionCookie();
     assert.strictEqual(typeof cookie, 'string');
-    assert.strictEqual(cookie.includes('.'), true);
+    const parts = cookie.split('.');
+    assert.strictEqual(parts.length, 3);
     assert.strictEqual(auth.verifySessionCookie(cookie), true);
   });
 
-  await t.test('rejects tampered session cookies', () => {
+  await t.test('rejects tampered session cookies and expired timestamps', () => {
     const cookie = auth.generateSessionCookie();
-    const [sessionId, sig] = cookie.split('.');
+    const [sessionId, ts, sig] = cookie.split('.');
     
     // Tamper with payload
-    const tamperedPayload = `tampered${sessionId.slice(8)}.${sig}`;
+    const tamperedPayload = `tampered${sessionId.slice(8)}.${ts}.${sig}`;
     assert.strictEqual(auth.verifySessionCookie(tamperedPayload), false);
 
     // Tamper with signature
-    const tamperedSig = `${sessionId}.${sig.slice(0, -4)}0000`;
+    const tamperedSig = `${sessionId}.${ts}.${sig.slice(0, -4)}0000`;
     assert.strictEqual(auth.verifySessionCookie(tamperedSig), false);
+
+    // Expired timestamp (31 days ago)
+    const oldTimestamp = (Date.now() - (31 * 24 * 60 * 60 * 1000)).toString();
+    const expiredCookie = `${sessionId}.${oldTimestamp}.${sig}`;
+    assert.strictEqual(auth.verifySessionCookie(expiredCookie), false);
 
     // Invalid format
     assert.strictEqual(auth.verifySessionCookie('random_string_no_dot'), false);
+    assert.strictEqual(auth.verifySessionCookie('part1.part2'), false);
     assert.strictEqual(auth.verifySessionCookie(''), false);
     assert.strictEqual(auth.verifySessionCookie(null), false);
   });

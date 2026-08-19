@@ -43,4 +43,11 @@ test('Security Module - Rate Limiter and IP Banning', async (t) => {
     assert.strictEqual(security.getBannedIpCount(), 0);
     assert.strictEqual(security.isIpBanned(targetIp), false);
   });
+
+  await t.test('normalizeIp correctly handles IPv4-mapped IPv6 addresses', () => {
+    assert.strictEqual(security.normalizeIp('::ffff:192.168.1.1'), '192.168.1.1');
+    assert.strictEqual(security.normalizeIp('192.168.1.1'), '192.168.1.1');
+    assert.strictEqual(security.normalizeIp('::1'), '::1');
+    assert.strictEqual(security.normalizeIp(null), '');
+  });
 });
