@@ -1,0 +1,543 @@
+import { Button, ScrollView } from "std-widgets.slint";
+
+component ToggleSwitch inherits Rectangle {
+    in-out property <bool> checked: true;
+    callback toggled();
+
+    width: 34px;
+    height: 20px;
+    border-radius: 10px;
+    background: checked ? #10b981 : #cbd5e1;
+    animate background { duration: 150ms; easing: ease-in-out; }
+
+    TouchArea {
+        clicked => {
+            root.checked = !root.checked;
+            root.toggled();
+        }
+    }
+
+    thumb := Rectangle {
+        x: checked ? parent.width - self.width - 3px : 3px;
+        y: 3px;
+        width: 14px;
+        height: 14px;
+        border-radius: 7px;
+        background: #ffffff;
+        drop-shadow-blur: 2px;
+        drop-shadow-color: #00000020;
+        drop-shadow-offset-y: 1px;
+        animate x { duration: 150ms; easing: cubic-bezier(0.16, 1, 0.3, 1); }
+    }
+}
+
+export component AppWindow inherits Window {
+    title: "Ultimatter";
+    min-width: 440px;
+    min-height: 700px;
+    max-width: 480px;
+    preferred-width: 450px;
+    preferred-height: 720px;
+    background: #f8fafc;
+    default-font-family: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif";
+
+    in-out property <string> status_text: "Agents Offline";
+    in-out property <bool> status_online: false;
+    in-out property <int> active_count: 0;
+    
+    in-out property <string> active_tab: "local"; // "local" | "tailscale"
+    in-out property <string> local_sub_mode: "ip"; // "ip" | "domain"
+    
+    in-out property <image> qr_image;
+    in-out property <string> direct_link: "Loading connection link...";
+    in-out property <string> copy_btn_text: "Copy";
+    
+    in-out property <bool> remote_access_enabled: true;
+    in-out property <bool> bubble_enabled: false;
+    
+    in-out property <string> local_domain: "ultramarine.local";
+    in-out property <string> tailscale_state: "stopped"; // "connected" | "stopped" | "not_installed"
+    
+    in-out property <bool> show_smart_card: true;
+    in-out property <string> version_text: "v1.0.0";
+
+    callback set_mode(string);
+    callback set_local_sub_mode(string);
+    callback copy_link();
+    callback toggle_remote_access();
+    callback toggle_bubble();
+    callback reset_token();
+    callback copy_opencode_cmd();
+    callback copy_tailscale_cmd();
+
+    ScrollView {
+        padding: 16px;
+        
+        VerticalLayout {
+            spacing: 12px;
+            alignment: start;
+
+            // 1. Header Card
+            Rectangle {
+                background: #ffffff;
+                border-radius: 14px;
+                border-width: 1px;
+                border-color: #e2e8f0;
+                drop-shadow-blur: 6px;
+                drop-shadow-color: #0f172a08;
+                drop-shadow-offset-y: 2px;
+                height: 64px;
+
+                HorizontalLayout {
+                    padding-left: 14px;
+                    padding-right: 14px;
+                    alignment: space-between;
+
+                    // Brand Title
+                    HorizontalLayout {
+                        spacing: 10px;
+                        alignment: start;
+                        
+                        Text {
+                            text: "🚀";
+                            font-size: 24px;
+                            vertical-alignment: center;
+                        }
+                        
+                        VerticalLayout {
+                            alignment: center;
+                            spacing: 1px;
+
+                            Text {
+                                text: "Ultimatter";
+                                font-size: 15px;
+                                font-weight: 700;
+                                color: #0f172a;
+                                letter-spacing: -0.2px;
+                            }
+                            Text {
+                                text: "Universal AI Gateway";
+                                font-size: 11px;
+                                color: #64748b;
+                            }
+                        }
+                    }
+
+                    // Status Pill
+                    Rectangle {
+                        background: root.status_online ? #dcfce7 : #f1f5f9;
+                        border-width: 1px;
+                        border-color: root.status_online ? #bbf7d0 : #e2e8f0;
+                        border-radius: 12px;
+                        height: 26px;
+                        horizontal-stretch: 0;
+
+                        HorizontalLayout {
+                            padding-left: 10px;
+                            padding-right: 10px;
+                            spacing: 6px;
+                            alignment: center;
+
+                            Rectangle {
+                                width: 7px;
+                                height: 7px;
+                                border-radius: 3.5px;
+                                background: root.status_online ? #10b981 : #94a3b8;
+                            }
+
+                            Text {
+                                text: root.status_text;
+                                font-size: 11px;
+                                font-weight: 600;
+                                color: root.status_online ? #166534 : #64748b;
+                                vertical-alignment: center;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 2. Security Toolbar
+            Rectangle {
+                background: #ffffff;
+                border-radius: 12px;
+                border-width: 1px;
+                border-color: #e2e8f0;
+
+                HorizontalLayout {
+                    padding-left: 12px;
+                    padding-right: 12px;
+                    padding-top: 10px;
+                    padding-bottom: 10px;
+                    alignment: space-between;
+
+                    HorizontalLayout {
+                        spacing: 8px;
+                        alignment: start;
+
+                        ToggleSwitch {
+                            checked: root.remote_access_enabled;
+                            toggled => { root.toggle_remote_access(); }
+                        }
+
+                        Text {
+                            text: root.remote_access_enabled ? "Remote Access: ON" : "Remote Access: OFF (LAN Only)";
+                            font-size: 12px;
+                            font-weight: 600;
+                            color: #334155;
+                            vertical-alignment: center;
+                        }
+                    }
+
+                    Rectangle {
+                        background: #f1f5f9;
+                        border-radius: 6px;
+                        border-width: 1px;
+                        border-color: #cbd5e1;
+                        
+                        TouchArea {
+                            clicked => { root.reset_token(); }
+                        }
+
+                        HorizontalLayout {
+                            padding-left: 8px;
+                            padding-right: 8px;
+                            padding-top: 4px;
+                            padding-bottom: 4px;
+                            
+                            Text {
+                                text: "🔄 Reset Token";
+                                font-size: 11px;
+                                font-weight: 600;
+                                color: #475569;
+                                vertical-alignment: center;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 3. Segmented Mode Tabs
+            Rectangle {
+                background: #e2e8f0;
+                border-radius: 10px;
+                height: 38px;
+
+                HorizontalLayout {
+                    padding: 3px;
+                    spacing: 4px;
+                    
+                    // Local Tab
+                    Rectangle {
+                        background: root.active_tab == "local" ? #ffffff : transparent;
+                        border-radius: 8px;
+                        drop-shadow-blur: root.active_tab == "local" ? 2px : 0px;
+                        drop-shadow-color: #00000015;
+
+                        TouchArea {
+                            clicked => { root.set_mode("local"); }
+                        }
+
+                        Text {
+                            text: "🏠 Local Wi-Fi";
+                            font-size: 12px;
+                            font-weight: 600;
+                            color: root.active_tab == "local" ? #0f172a : #64748b;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                        }
+                    }
+
+                    // Tailscale Tab
+                    Rectangle {
+                        background: root.active_tab == "tailscale" ? #ffffff : transparent;
+                        border-radius: 8px;
+                        drop-shadow-blur: root.active_tab == "tailscale" ? 2px : 0px;
+                        drop-shadow-color: #00000015;
+
+                        TouchArea {
+                            clicked => { root.set_mode("tailscale"); }
+                        }
+
+                        Text {
+                            text: "🌍 Tailscale MagicDNS";
+                            font-size: 12px;
+                            font-weight: 600;
+                            color: root.active_tab == "tailscale" ? #0f172a : #64748b;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                        }
+                    }
+                }
+            }
+
+            // 4. Main Connection Card (QR & Link)
+            Rectangle {
+                background: #ffffff;
+                border-radius: 16px;
+                border-width: 1px;
+                border-color: #e2e8f0;
+                drop-shadow-blur: 8px;
+                drop-shadow-color: #0f172a06;
+                drop-shadow-offset-y: 2px;
+
+                VerticalLayout {
+                    padding: 16px;
+                    spacing: 12px;
+                    alignment: center;
+
+                    // QR Code Frame
+                    Rectangle {
+                        background: #f8fafc;
+                        border-radius: 12px;
+                        border-width: 1px;
+                        border-color: #e2e8f0;
+                        width: 200px;
+                        height: 200px;
+                        horizontal-stretch: 0;
+
+                        Image {
+                            source: root.qr_image;
+                            width: 180px;
+                            height: 180px;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                        }
+                    }
+
+                    // Link Section
+                    VerticalLayout {
+                        spacing: 4px;
+                        width: 100%;
+
+                        Text {
+                            text: "Direct Mobile Connection Link";
+                            font-size: 11px;
+                            font-weight: 600;
+                            color: #64748b;
+                        }
+
+                        Rectangle {
+                            background: #f8fafc;
+                            border-radius: 8px;
+                            border-width: 1px;
+                            border-color: #cbd5e1;
+                            height: 38px;
+
+                            HorizontalLayout {
+                                padding-left: 10px;
+                                padding-right: 6px;
+                                spacing: 6px;
+                                alignment: space-between;
+
+                                Text {
+                                    text: root.direct_link;
+                                    font-size: 11px;
+                                    font-family: "ui-monospace, monospace";
+                                    color: #0f172a;
+                                    vertical-alignment: center;
+                                    overflow: elide;
+                                    width: 280px;
+                                }
+
+                                Rectangle {
+                                    background: #0284c7;
+                                    border-radius: 6px;
+                                    width: 60px;
+                                    height: 28px;
+                                    horizontal-stretch: 0;
+
+                                    TouchArea {
+                                        clicked => { root.copy_link(); }
+                                    }
+
+                                    Text {
+                                        text: root.copy_btn_text;
+                                        font-size: 11px;
+                                        font-weight: 600;
+                                        color: #ffffff;
+                                        horizontal-alignment: center;
+                                        vertical-alignment: center;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 5. Smart Quick Start Card (when 0 agents online)
+            if (root.show_smart_card) : Rectangle {
+                background: #f8fafc;
+                border-radius: 12px;
+                border-width: 1px;
+                border-color: #e2e8f0;
+
+                VerticalLayout {
+                    padding: 14px;
+                    spacing: 10px;
+
+                    HorizontalLayout {
+                        spacing: 6px;
+                        Text { text: "💡"; font-size: 14px; }
+                        Text {
+                            text: "Smart Quick Start & Diagnostics";
+                            font-size: 12px;
+                            font-weight: 700;
+                            color: #0f172a;
+                            vertical-alignment: center;
+                        }
+                    }
+
+                    // Antigravity Row
+                    Rectangle {
+                        background: #ffffff;
+                        border-radius: 8px;
+                        border-width: 1px;
+                        border-color: #e2e8f0;
+
+                        HorizontalLayout {
+                            padding: 10px;
+                            spacing: 10px;
+                            Text { text: "🛸"; font-size: 18px; vertical-alignment: center; }
+                            VerticalLayout {
+                                spacing: 2px;
+                                Text { text: "Google Antigravity"; font-size: 12px; font-weight: 700; color: #0f172a; }
+                                Text { text: "Launch the Antigravity IDE on your PC to auto-connect."; font-size: 11px; color: #64748b; }
+                            }
+                        }
+                    }
+
+                    // OpenCode Row
+                    Rectangle {
+                        background: #ffffff;
+                        border-radius: 8px;
+                        border-width: 1px;
+                        border-color: #e2e8f0;
+
+                        HorizontalLayout {
+                            padding: 10px;
+                            spacing: 10px;
+                            Text { text: "👐"; font-size: 18px; vertical-alignment: center; }
+                            VerticalLayout {
+                                spacing: 4px;
+                                Text { text: "OpenCode"; font-size: 12px; font-weight: 700; color: #0f172a; }
+                                
+                                Rectangle {
+                                    background: #f1f5f9;
+                                    border-radius: 6px;
+                                    border-width: 1px;
+                                    border-color: #cbd5e1;
+                                    height: 28px;
+
+                                    HorizontalLayout {
+                                        padding-left: 8px;
+                                        padding-right: 4px;
+                                        spacing: 6px;
+                                        alignment: space-between;
+
+                                        Text {
+                                            text: "opencode web";
+                                            font-size: 11px;
+                                            font-family: "ui-monospace, monospace";
+                                            color: #0f172a;
+                                            vertical-alignment: center;
+                                        }
+
+                                        Rectangle {
+                                            background: #e2e8f0;
+                                            border-radius: 4px;
+                                            width: 48px;
+                                            height: 20px;
+                                            horizontal-stretch: 0;
+
+                                            TouchArea {
+                                                clicked => { root.copy_opencode_cmd(); }
+                                            }
+
+                                            Text {
+                                                text: "Copy";
+                                                font-size: 10px;
+                                                font-weight: 600;
+                                                color: #334155;
+                                                horizontal-alignment: center;
+                                                vertical-alignment: center;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 6. Footer Badges
+            HorizontalLayout {
+                spacing: 6px;
+                alignment: center;
+
+                Rectangle {
+                    background: #f1f5f9;
+                    border-radius: 6px;
+                    border-width: 1px;
+                    border-color: #e2e8f0;
+
+                    HorizontalLayout {
+                        padding-left: 8px;
+                        padding-right: 8px;
+                        padding-top: 3px;
+                        padding-bottom: 3px;
+
+                        Text {
+                            text: "⚡ HTTP/2 Multiplexed";
+                            font-size: 10px;
+                            color: #475569;
+                        }
+                    }
+                }
+
+                Rectangle {
+                    background: #f1f5f9;
+                    border-radius: 6px;
+                    border-width: 1px;
+                    border-color: #e2e8f0;
+
+                    HorizontalLayout {
+                        padding-left: 8px;
+                        padding-right: 8px;
+                        padding-top: 3px;
+                        padding-bottom: 3px;
+
+                        Text {
+                            text: "🔒 256-Bit Auth";
+                            font-size: 10px;
+                            color: #475569;
+                        }
+                    }
+                }
+
+                Rectangle {
+                    background: #f1f5f9;
+                    border-radius: 6px;
+                    border-width: 1px;
+                    border-color: #e2e8f0;
+
+                    HorizontalLayout {
+                        padding-left: 8px;
+                        padding-right: 8px;
+                        padding-top: 3px;
+                        padding-bottom: 3px;
+
+                        Text {
+                            text: root.version_text;
+                            font-size: 10px;
+                            font-weight: 600;
+                            color: #64748b;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
