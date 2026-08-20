@@ -30,3 +30,7 @@ npm-debug.log*
 Thumbs.db
 .vscode/
 .idea/
+
+# Rust Build Artifacts
+target/
+desktop/target/

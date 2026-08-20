@@ -12,7 +12,9 @@
     "build:win": "npx @yao-pkg/pkg index.js --output bin/ultimatter-windows-x64.exe --targets node22-win-x64",
     "build:all": "npm run build:linux && npm run build:mac && npm run build:win",
     "pack:release": "tar -czf bin/ultimatter-linux-x64.tar.gz -C bin ultimatter",
-    "test": "NODE_ENV=test node --test test/*.test.js"
+    "test": "NODE_ENV=test node --test test/*.test.js",
+    "desktop:run": "cargo run --manifest-path desktop/Cargo.toml",
+    "desktop:build": "cargo build --release --manifest-path desktop/Cargo.toml"
   },
   "keywords": [],
   "author": "",
