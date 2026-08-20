@@ -57,6 +57,9 @@ test('Config Module - Path Resolutions and Permissions', async (t) => {
 
     const procPorts = network.getProcListeningPorts();
     assert.strictEqual(Array.isArray(procPorts), true);
+
+    const fingerprint = network.getLinuxSocketFingerprint();
+    assert.strictEqual(typeof fingerprint, 'string');
   });
 
   await t.test('AGENT_TARGETS contains unified definitions for Antigravity and OpenCode', () => {
