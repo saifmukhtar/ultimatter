@@ -23,6 +23,8 @@ test('Dashboard Module - Vector SVG QR and HTML Generator', async (t) => {
     assert.strictEqual(html.includes('<!DOCTYPE html>'), true);
     assert.strictEqual(html.includes('Ultimatter Control Panel'), true);
     assert.strictEqual(html.includes('id="tabTailscale"'), true);
+    assert.strictEqual(html.includes('id="smartAssistantCard"'), true);
+    assert.strictEqual(html.includes('sudo tailscale up'), true);
 
     const scriptMatch = html.match(/<script>([\s\S]*?)<\/script>/);
     assert.strictEqual(!!scriptMatch, true);
