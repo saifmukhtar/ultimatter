@@ -6,7 +6,7 @@
   "bin": "index.js",
   "scripts": {
     "start": "node index.js",
-    "build": "npx @yao-pkg/pkg index.js --output bin/ultimatter --targets node22-linux-x64",
+    "build": "npm run build:linux",
     "build:linux": "npx @yao-pkg/pkg index.js --output bin/ultimatter-linux-x64 --targets node22-linux-x64",
     "build:mac": "npx @yao-pkg/pkg index.js --output bin/ultimatter-macos-arm64 --targets node22-macos-arm64",
     "build:win": "npx @yao-pkg/pkg index.js --output bin/ultimatter-windows-x64.exe --targets node22-win-x64",
