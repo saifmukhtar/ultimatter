@@ -72,5 +72,29 @@ test('Auth Module - Session Cookie Management', async (t) => {
 
     // Old cookie signed with previous HMAC secret must fail immediately
     assert.strictEqual(auth.verifySessionCookie(oldCookie), false);
+    assert.strictEqual(auth.getCookieCacheSize(), 0);
+  });
+
+  await t.test('micro-caches verified session cookies for high-throughput bursts', () => {
+    auth.resetSecrets();
+    assert.strictEqual(auth.getCookieCacheSize(), 0);
+
+    const cookie = auth.generateSessionCookie();
+    // First verification (crypto computation + cache populate)
+    assert.strictEqual(auth.verifySessionCookie(cookie), true);
+    assert.strictEqual(auth.getCookieCacheSize(), 1);
+
+    // Second verification (fast micro-cache hit)
+    assert.strictEqual(auth.verifySessionCookie(cookie), true);
+    assert.strictEqual(auth.getCookieCacheSize(), 1);
+
+    // Invalid cookie must not be cached
+    assert.strictEqual(auth.verifySessionCookie('invalid.cookie.123'), false);
+    assert.strictEqual(auth.getCookieCacheSize(), 1);
+
+    // Reset secrets must immediately purge the cache
+    auth.resetSecrets();
+    assert.strictEqual(auth.getCookieCacheSize(), 0);
   });
 });
+
