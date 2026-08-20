@@ -44,6 +44,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .build(&event_loop)?;
 
     // 5. Initialize Wry WebView loading canonical Dashboard
+    #[cfg(target_os = "linux")]
+    let _webview = {
+        use tao::platform::unix::WindowExtUnix;
+        use wry::WebViewBuilderExtUnix;
+
+        let vbox = window.default_vbox().expect("Failed to acquire GTK container vbox");
+        WebViewBuilder::new()
+            .with_url("http://127.0.0.1:5865/dashboard")
+            .build_gtk(vbox)?
+    };
+
+    #[cfg(not(target_os = "linux"))]
     let _webview = WebViewBuilder::new()
         .with_url("http://127.0.0.1:5865/dashboard")
         .build(&window)?;
