@@ -37,7 +37,7 @@ pub struct GatewayClient {
 impl GatewayClient {
     pub fn new(port: u16) -> Self {
         let client = reqwest::blocking::Client::builder()
-            .timeout(std::time::Duration::from_millis(1500))
+            .timeout(std::time::Duration::from_millis(3000))
             .build()
             .unwrap_or_default();
         Self {
@@ -65,5 +65,11 @@ impl GatewayClient {
     pub fn reset_token(&self) {
         let url = format!("{}/api/dashboard/reset-token", self.base_url);
         let _ = self.client.post(&url).send();
+    }
+
+    pub fn set_domain(&self, domain: &str) {
+        let url = format!("{}/api/dashboard/set-domain", self.base_url);
+        let payload = serde_json::json!({ "domain": domain });
+        let _ = self.client.post(&url).json(&payload).send();
     }
 }
