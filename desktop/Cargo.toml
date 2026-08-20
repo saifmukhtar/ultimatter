@@ -4,15 +4,7 @@ version = "1.0.0"
 description = "Ultimatter Native Desktop Application"
 edition = "2021"
 
-[build-dependencies]
-slint-build = "1.9"
-
 [dependencies]
-slint = { version = "1.9", default-features = true }
-qrcode = { version = "0.14", default-features = false }
-image = { version = "0.25", default-features = false, features = ["png"] }
-reqwest = { version = "0.12", default-features = false, features = ["json", "blocking", "rustls-tls"] }
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-arboard = "3.4"
-open = "5.3"
+wry = "0.47"
+tao = "0.30"
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "rustls-tls"] }
