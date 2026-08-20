@@ -38,7 +38,7 @@ Instead of running a stripped-down mobile client or third-party web clone, Ultim
 * 🏠 **LAN-Only Toggle:** 1-click toggle on the desktop control panel to pause remote connections and isolate access to local Wi-Fi.
 
 ### 🌍 Seamless Connectivity
-* 🏠 **Local Wi-Fi:** Direct IP and mDNS `.local` domain support with downloadable Root CA certificate for clean HTTPS on mobile.
+* 🏠 **Local Wi-Fi:** Direct IP and mDNS `.local` domain support with a **1-tap Root CA certificate download card** on the Mobile Hub (`/api/ca.pem`) for zero-warning HTTPS on mobile.
 * 🌍 **5G Remote Access (Tailscale MagicDNS):** Direct peer-to-peer WireGuard tunnels with globally trusted Let's Encrypt certificates.
 * 💡 **Smart Self-Healing Diagnostics:** Dynamic desktop control panel that detects your OS and provides 1-click copyable terminal commands for agents and network services.
 
@@ -51,10 +51,10 @@ Instead of running a stripped-down mobile client or third-party web clone, Ultim
 ### 1. Launch Ultimatter
 Download the latest executable for your OS from **[GitHub Releases](https://github.com/saifmukhtar/ultimatter/releases)**:
 
-* **Desktop (Windows / macOS / Linux):** Simply double-click the executable. The desktop control panel will automatically launch in your browser.
-* **Server / Headless Mode:** Run with the `--headless` flag to start Ultimatter as a background service without opening a browser window:
+* **Desktop (Windows / macOS / Linux):** Simply double-click the executable. Ultimatter will automatically launch its **dedicated floating Control Panel window** on your desktop (no browser tabs or address bar clutter).
+* **Server / Headless Mode:** Run with the `--headless` flag to start Ultimatter as a background service without opening a desktop GUI window:
   ```bash
-  ./ultimatter --headless
+  ./ultimatter-linux-x64 --headless
   ```
 
 ### 2. Connect Your Phone
@@ -85,6 +85,9 @@ npm run build:linux
 
 # Build for all platforms (Linux, macOS, Windows)
 npm run build:all
+
+# Package release tarball
+npm run pack:release
 ```
 
 ---
