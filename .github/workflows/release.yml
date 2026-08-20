@@ -50,10 +50,7 @@ jobs:
         run: npm ci || npm install
 
       - name: Build multi-platform executables
-        run: |
-          npm run build:linux
-          npm run build:mac
-          npm run build:win
+        run: npm run build:all
 
       - name: Compress release archives
         run: |
