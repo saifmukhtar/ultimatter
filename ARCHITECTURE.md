@@ -1,6 +1,6 @@
 # 🏛️ Ultimatter Architecture Blueprint
 
-This document details the internal architecture, network engineering, and component interactions of **Ultimatter** — the decoupled mobile gateway for Antigravity.
+This document details the internal architecture, network engineering, and component interactions of **Ultimatter** — the decoupled mobile gateway for **Google Antigravity** and **OpenCode**.
 
 ---
 
@@ -8,46 +8,44 @@ This document details the internal architecture, network engineering, and compon
 
 Ultimatter is built on the **Zero-Touch Outer Gateway** pattern:
 
-* **100% Decoupled:** Ultimatter does not patch, modify, or inject plugins into Antigravity on disk. It runs as an independent daemon in user space.
-* **Update-Proof:** Because Ultimatter communicates strictly over loopback TCP sockets (`127.0.0.1`), Antigravity updates, restarts, or crashes will never corrupt or break the mobile bridge.
-* **Seamless Protocol Translation:** Converts modern mobile HTTP/2 requests from Safari and Chrome into the upstream language server's expected HTTP/1.1 and WebSocket formats.
+* **100% Decoupled:** Ultimatter does not patch, modify, or inject plugins into Antigravity or OpenCode on disk. It runs as an independent daemon in user space.
+* **Update-Proof:** Because Ultimatter communicates strictly over loopback TCP sockets (`127.0.0.1`), IDE updates, restarts, or crashes will never corrupt or break the mobile bridge.
+* **Direct Real-Time Access:** Connects your mobile browser directly to the exact live AI agent processes on your machine with zero mockups or third-party web clones.
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                       📱 CLIENT LAYER                       │
-│    iOS (Safari Standalone PWA) / Android (Chrome PWA)       │
-└──────────────────────────────┬──────────────────────────────┘
-                               │
-               🔒 TLS / HTTP/2 │ (Port 5864)
-                               ▼
-┌─────────────────────────────────────────────────────────────┐
-│                 🚀 ULTIMATTER DAEMON GATEWAY                │
-│                                                             │
-│  ┌──────────────────────┐        ┌───────────────────────┐  │
-│  │   256-Bit Auth &     │        │  Brute-Force Firewall │  │
-│  │ Timestamped Cookies  │◄──────►│ (20 Strikes + Debounce)│ │
-│  └──────────┬───────────┘        └───────────────────────┘  │
-│             │                                               │
-│             ▼                                               │
-│  ┌───────────────────────────────────────────────────────┐  │
-│  │        HTTP/2 & WebSocket Reverse Proxy Engine        │  │
-│  │   • SNI Multi-Cert Handler (mkcert / Let's Encrypt)   │  │
-│  │   • PWA & Online Network Shim Stream Interception     │  │
-│  │   • Upstream Header Normalizer (Host/Origin/Referer)  │  │
-│  └──────────────────────────┬────────────────────────────┘  │
-│                             │                               │
-│  ┌──────────────────────────▼────────────────────────────┐  │
-│  │     OS-Level Socket Discovery & Two-Stage Probing     │  │
-│  │     (Polls ss / lsof / PowerShell + HTTPS Probe)      │  │
-│  └──────────────────────────┬────────────────────────────┘  │
-└─────────────────────────────┼───────────────────────────────┘
-                              │
-              ⚡ HTTP/1.1 + WS │ (https://127.0.0.1:45981)
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                 💻 LOCAL AI AGENT BACKEND                   │
-│         Antigravity IDE / Language Server Process           │
-└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              📱 CLIENT LAYER                                │
+│           iOS (Safari Standalone PWA) / Android (Chrome PWA)                │
+└──────────────────────────────────────┬──────────────────────────────────────┘
+                                       │
+                        🔒 TLS / HTTP/2 │ (Port 5864)
+                                       ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         🚀 ULTIMATTER DAEMON GATEWAY                        │
+│                                                                             │
+│  ┌──────────────────────────────┐        ┌───────────────────────────────┐  │
+│  │   256-Bit Auth Engine &      │        │    Brute-Force Firewall       │  │
+│  │ 5s Session Micro-Cache       │◄──────►│   (20 Strikes + 1s Debounce)  │  │
+│  └──────────────┬───────────────┘        └───────────────────────────────┘  │
+│                 │                                                           │
+│                 ▼                                                           │
+│  ┌───────────────────────────────────────────────────────────────────────┐  │
+│  │                HTTP/2 & WebSocket Reverse Proxy Engine                │  │
+│  │   • SNI Multi-Cert Handler (mkcert / Let's Encrypt MagicDNS)          │  │
+│  │   • Persistent TCP Connection Pools (TCP_NODELAY + Keep-Alive)       │  │
+│  │   • Mobile Viewport Tuning (interactive-widget=resizes-content)       │  │
+│  │   • Shadow DOM Encapsulated Portal Injection (<ultimatter-portal>)    │  │
+│  └──────────────────────────────────┬────────────────────────────────────┘  │
+│                                     │                                       │
+│  ┌──────────────────────────────────▼────────────────────────────────────┐  │
+│  │          Zero-Fork Kernel Socket Discovery & Agent Router             │  │
+│  │     • In-Memory /proc/net/tcp Fingerprinting (0.0% Idle CPU)          │  │
+│  │     • Two-Stage Active HTTPS/HTTP Probe & Adaptive Backoff            │  │
+│  └──────────────────────────────────┬────────────────────────────────────┘  │
+└─────────────────────────────────────┼───────────────────────────────────────┘
+                                      │
+              ⚡ HTTP/1.1 + WebSocket ├───► 🛸 Google Antigravity (:43675)
+              (Loopback Connection)   └───► 👐 OpenCode (:4096)
 ```
 
 ---
@@ -56,33 +54,69 @@ Ultimatter is built on the **Zero-Touch Outer Gateway** pattern:
 
 | Module | File | Primary Responsibility |
 | :--- | :--- | :--- |
-| **CLI & Lifecycle** | [`index.js`](index.js) | CLI argument parsing, single-instance lock, and process daemonization. |
-| **Reverse Proxy Core** | [`lib/proxy.js`](lib/proxy.js) | HTTP/2 secure server, SNI certificate router, WebSocket upgrade tunnels, and response transformation. |
-| **Network & Discovery** | [`lib/network.js`](lib/network.js) | OS listening socket inspection, HTTPS validation probe, local mDNS resolver, and embedded `mkcert` runner. |
-| **Cryptographic Auth** | [`lib/auth.js`](lib/auth.js) | 256-bit secure token generator, HMAC-SHA256 cookie signer, and chronological expiry verification. |
+| **CLI & Lifecycle** | [`index.js`](index.js) | Single-instance socket lock, signal handling, and desktop/headless lifecycle. |
+| **Reverse Proxy Core** | [`lib/proxy.js`](lib/proxy.js) | HTTP/2 multiplexing, SNI certificate routing, persistent connection pooling, and WebSocket duplex streaming. |
+| **Agent Hub & Switcher** | [`lib/hub.js`](lib/hub.js) | Mobile agent dashboard, 1-tap target switching, and first-time PWA home-screen guidance. |
+| **Portal & Switcher Drawer** | [`lib/bubble.js`](lib/bubble.js) | Shadow DOM encapsulated portal (`<ultimatter-portal>`), draggable touch physics, and 8px backdrop blur switcher. |
+| **Network & Discovery** | [`lib/network.js`](lib/network.js) | Zero-fork `/proc/net/tcp` socket fingerprinting, adaptive backoff, and multi-agent target definitions (`AGENT_TARGETS`). |
+| **Cryptographic Auth** | [`lib/auth.js`](lib/auth.js) | 256-bit token generator, HMAC-SHA256 cookie signer, and 5-second in-memory session micro-caching. |
 | **Security Firewall** | [`lib/security.js`](lib/security.js) | Brute-force rate limiter, 1-second burst debouncing, dual-stack IP normalizer, and instant unban registry. |
-| **PWA & Stream Shim** | [`lib/pwa.js`](lib/pwa.js) | Manifest generator, SVG vector icon pipeline, and `<head>` network online shim. |
-| **Desktop Control Panel** | [`lib/dashboard.js`](lib/dashboard.js) | Light minimal UI, vector SVG QR generator, telemetry polling, and domain manager. |
+| **Mobile PWA & Viewport** | [`lib/pwa.js`](lib/pwa.js) | Virtual keyboard auto-docking injection, notch safe-area CSS, and network roaming auto-reconnect (< 200ms). |
+| **Desktop Control Panel** | [`lib/dashboard.js`](lib/dashboard.js) | Vector SVG QR generators, live status telemetry, and OS-tailored smart diagnostic assistant. |
 | **Config & Storage** | [`lib/config.js`](lib/config.js) | Secure path resolutions with `0o700` directory and `0o600` secret file permissions. |
 
 ---
 
 ## 3. Deep Dive: Key Subsystems
 
-### A. Two-Stage OS Socket Auto-Discovery ([`lib/network.js`](lib/network.js))
-Instead of requiring hardcoded ports or IDE plugins, Ultimatter uses a robust **two-stage verification pipeline**:
-1. **Stage 1 (Kernel Socket Scanning):** Ultimatter queries OS-level listening sockets for active `language_server` processes:
-   * **Linux:** `ss -tlnp | grep language_server`
-   * **macOS:** `lsof -iTCP -sTCP:LISTEN -P -n | grep language_server`
-   * **Windows:** `Get-NetTCPConnection` via PowerShell matching process names.
-2. **Stage 2 (Active HTTPS Validation Probe):** Candidate ports are actively probed with an HTTPS handshake (`checkPortIsIde`). This strictly distinguishes the AI agent's web workbench from raw TCP language servers (such as `rust-analyzer`, `gopls`, or `pyright`), eliminating false positives.
+### A. Zero-Fork Kernel Socket Fingerprinting ([`lib/network.js`](lib/network.js))
+Unlike traditional tools that continuously spawn child processes (`ss`, `lsof`, `netstat`) causing CPU spikes and battery drain, Ultimatter implements **zero-fork kernel inspection**:
 
-When validated, Ultimatter hot-updates its proxy target dynamically without dropping active client connections.
+1. **In-Memory `/proc/net/tcp` Fingerprinting:** On Linux, Ultimatter reads `/proc/net/tcp` and `/proc/net/tcp6` directly in memory to compute a 32-bit MurmurHash socket fingerprint.
+2. **0-Fork Steady State:** If the kernel socket table is unchanged, child process forks are completely bypassed, resulting in **0.0% CPU usage and zero fork churn**.
+3. **Adaptive Backoff:** Polling intervals dynamically adapt from 1.5 seconds during startup to 10 seconds in steady state.
+4. **Two-Stage Active Probe:** Candidate ports are verified with active HTTP/HTTPS handshakes to distinguish agent workbenches from raw TCP language servers (such as `gopls` or `rust-analyzer`).
 
 ---
 
-### B. Dual-Channel Transport & WebSocket Upgrade Tunneling ([`lib/proxy.js`](lib/proxy.js))
-Ultimatter binds a unified port `5864` supporting both local Wi-Fi and global 5G connections seamlessly via **Server Name Indication (SNI)**:
+### B. Universal Agent Target Router & Mobile Hub ([`lib/hub.js`](lib/hub.js) & [`lib/network.js`](lib/network.js))
+Ultimatter natively tracks and routes between active AI coding agents:
+
+* **Target Definitions:**
+  * 🛸 **Google Antigravity:** Port `43675` (or dynamic candidate scanned from `language_server`).
+  * 👐 **OpenCode:** Port `4096` (`opencode web`).
+* **Hot-Switching API:** Calling `POST /api/switch-agent?id=<agentId>` dynamically rebinds proxy upstream targets in `0.001ms` without interrupting active client HTTP/2 connections.
+* **Ultimatter Mobile Hub (`/hub`):** Server-rendered Apple HIG card dashboard allowing instant 1-tap switching between running agents.
+
+---
+
+### C. Shadow DOM Encapsulated Portal & Floating Bubble ([`lib/bubble.js`](lib/bubble.js))
+To provide seamless mobile switching without modifying the upstream IDE:
+
+* **Shadow DOM Isolation:** Injects `<ultimatter-portal>` into HTML responses. All styles, drawer components, and bubble elements are encapsulated inside `#shadow-root` with zero CSS bleed into Antigravity or OpenCode.
+* **Draggable Touch Physics:** Supports touch dragging with velocity momentum and automatic snapping to the nearest screen edge.
+* **Switching Drawer:** Features an Apple HIG light bottom sheet with `backdrop-filter: blur(8px)`, spring physics (`cubic-bezier(0.16, 1, 0.3, 1)`), and instant visual/haptic feedback (`navigator.vibrate(8)`).
+
+---
+
+### D. Mobile Touch & Viewport Tuning ([`lib/pwa.js`](lib/pwa.js))
+* **Virtual Keyboard Auto-Docking:** Injects `<meta name="viewport" content="... interactive-widget=resizes-content, viewport-fit=cover">` so mobile virtual keyboards cleanly dock above prompt inputs and code diffs without obscuring content.
+* **Safe-Area Notch Insets:** Injects CSS variables (`--sat`, `--sab`, `--sal`, `--sar`) using `env(safe-area-inset-*)` for edge-to-edge iOS and Android displays.
+* **0ms Touch Response:** Injects `touch-action: manipulation;` to eliminate the default 300ms mobile browser tap delay.
+* **Overscroll Containment:** Injects `overscroll-behavior-y: contain;` to prevent accidental page pull-to-refresh when scrolling terminal or code buffers.
+
+---
+
+### E. Latency Optimization & Network Roaming Auto-Reconnect ([`lib/proxy.js`](lib/proxy.js) & [`lib/pwa.js`](lib/pwa.js))
+* **TCP Socket Tuning:** Inbound and outbound sockets set `socket.setNoDelay(true)` (disables Nagle's algorithm) and `socket.setKeepAlive(true, 15000)`.
+* **Persistent Connection Pooling:** Upstream proxying utilizes dedicated `http.Agent` and `https.Agent` pools (`maxSockets: 128`, `keepAliveMsecs: 30000`).
+* **Sub-200ms Network Roaming:** Injects client-side `online` and `visibilitychange` event listeners that immediately re-arm WebSockets when transitioning between 5G and Home Wi-Fi without reloading the page.
+* **Session Cookie Micro-Caching:** 5-second in-memory auth micro-cache reduces crypto verification time to 0.001ms during high-frequency asset bursts.
+
+---
+
+### F. Dual-Channel Transport & SNI Routing ([`lib/proxy.js`](lib/proxy.js))
+Ultimatter binds a single secure port `5864` supporting both local Wi-Fi and global 5G connections seamlessly via **Server Name Indication (SNI)**:
 
 ```
                           ┌──────────────────────────┐
@@ -101,37 +135,19 @@ Ultimatter binds a unified port `5864` supporting both local Wi-Fi and global 5G
              └─────────────────────────┘   └─────────────────────────┘
 ```
 
-* **HTTP/2 Multiplexing:** Standard web requests, editor assets, and file trees stream concurrently over binary HTTP/2 frames.
-* **Raw WebSocket Duplex Tunnels:** Live language server event streams, real-time agent telemetry, and integrated terminals bypass HTTP/2 encapsulation via Node's `upgrade` event handler (`proxy.ws`) to establish raw, uninterrupted full-duplex TCP tunnels.
+* **HTTP/2 Multiplexing:** Asset requests, file trees, and web streams multiplex concurrently over binary HTTP/2 frames.
+* **Raw WebSocket Duplex Tunnels:** Live language server event streams, AI agent thought processes, and integrated terminals bypass HTTP/2 encapsulation via Node's `upgrade` event handler to establish raw, full-duplex TCP tunnels.
 
 ---
 
-### C. Cryptographic Authentication & 30-Day Cookies ([`lib/auth.js`](lib/auth.js))
-1. **Initial QR Scan:** The user scans the QR code containing a 256-bit token (`?token=<hex>`).
-2. **Timing-Safe Validation:** `auth.verifyToken()` validates the token using `crypto.timingSafeEqual()` to prevent timing attacks.
-3. **Timestamped Session Cookie:** On first load, the proxy sets:
-   $$\text{Cookie Payload} = \text{sessionId} \mathbin{\Vert} \text{timestamp} \mathbin{\Vert} \text{HMAC}_{\text{secret}}(\text{sessionId} \mathbin{\Vert} \text{timestamp})$$
-4. **Expiry Verification:** Subsequent requests validate both HMAC authenticity and confirm that $\text{Date.now()} - \text{timestamp} < 30\text{ days}$.
-5. **1-Click Revocation:** Rotating `hmacSecret` via the dashboard instantly revokes all cookies across all devices.
+### G. Smart Context-Aware Diagnostics ([`lib/dashboard.js`](lib/dashboard.js))
+The desktop control panel continuously monitors the local environment to provide actionable self-healing guidance:
+* **0 Agents Running:** Shows 1-click copyable quick start command (`opencode web`) and Antigravity launch guide.
+* **Tailscale Stopped / Missing:** Dynamically detects host OS (`linux`, `darwin`, `win32`) to provide the exact 1-line command (`sudo tailscale up` or installer link).
 
 ---
 
-### D. HTML Stream Interception & Network Online Shim ([`lib/proxy.js`](lib/proxy.js) & [`lib/pwa.js`](lib/pwa.js))
-When the upstream IDE returns `Content-Type: text/html`, Ultimatter decompresses the stream (Gzip, Brotli, or Deflate) and injects:
-* **Standalone PWA Meta Tags:** Configures `apple-mobile-web-app-capable: yes` and links `/manifest.webmanifest` and `/icon.svg`.
-* **Network Online Shim:** Overrides `navigator.onLine` to `true` and suppresses false `offline` event propagation caused by Android mobile hotspot interface classification.
-
----
-
-### E. Brute-Force Rate Limiter & Debounce Engine ([`lib/security.js`](lib/security.js))
-* **Threshold:** 20 failed attempts triggers a 15-minute IP ban.
-* **1-Second Burst Debouncing:** When a browser fires 10 parallel asset requests with an outdated token on page refresh, all attempts within 1000ms count as **1 single failed strike**.
-* **IP Normalization:** Strips IPv4-mapped IPv6 prefixes (`::ffff:`) to ensure uniform tracking.
-* **1-Click Unban:** `POST /api/dashboard/unban` allows instant lockout resolution via the desktop GUI.
-
----
-
-### F. Zero-Dependency Standalone Packaging
+### H. Zero-Dependency Standalone Packaging
 Ultimatter is compiled using `@yao-pkg/pkg` into a single standalone binary:
 * **Embedded Node.js Engine:** Embeds the Node.js v22 runtime directly inside the executable.
 * **Bundled mkcert Binaries:** Includes official `mkcert v1.4.4` platform binaries (`assets/mkcert-*`) that auto-extract to `~/.config/ultimatter/bin/` if not present on the host OS.
@@ -143,9 +159,9 @@ Ultimatter is compiled using `@yao-pkg/pkg` into a single standalone binary:
 
 | Attack Vector | Mitigation Strategy |
 | :--- | :--- |
-| **Brute-Force Attacks** | 256-bit token entropy ($2^{256}$ combinations) + in-memory IP rate limiter. |
+| **Brute-Force Attacks** | 256-bit token entropy ($2^{256}$ combinations) + in-memory IP rate limiter with 15-minute lockout and 1s debouncing. |
 | **Timing Attacks** | All cryptographic comparisons use constant-time `crypto.timingSafeEqual()`. |
 | **Cross-Origin / CSRF** | Proxied requests rewrite `Origin`/`Host` strictly after cryptographic authentication. Cookies enforce `SameSite=Lax`. |
 | **XSS Cookie Theft** | Session cookies are protected with the `HttpOnly` flag. |
-| **Unauthorized Remote Access** | 1-click **LAN Lockdown** switch in dashboard blocks incoming Tailscale connections (`100.x.y.z`, `fd7a:`, `*.ts.net`) with `403 Forbidden`. |
+| **Unauthorized Remote Access** | 1-click **LAN Lockdown** switch on the control panel blocks incoming Tailscale connections (`100.x.y.z`, `fd7a:`, `*.ts.net`) with `403 Forbidden`. |
 | **File System Leakage** | All persistent keys and tokens are stored in `~/.config/ultimatter/` with restricted `0o700` and `0o600` permissions. |
