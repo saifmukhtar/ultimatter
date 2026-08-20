@@ -10,11 +10,9 @@
     "build:linux": "npx @yao-pkg/pkg index.js --output bin/ultimatter-linux-x64 --targets node22-linux-x64",
     "build:mac": "npx @yao-pkg/pkg index.js --output bin/ultimatter-macos-arm64 --targets node22-macos-arm64",
     "build:win": "npx @yao-pkg/pkg index.js --output bin/ultimatter-windows-x64.exe --targets node22-win-x64",
-    "build:all": "npm run build:linux && npm run build:mac && npm run build:win && npm run desktop:build",
-    "pack:release": "tar -czf bin/ultimatter-linux-x64.tar.gz -C bin ultimatter-linux-x64 ultimatter-desktop-linux-x64",
-    "test": "NODE_ENV=test node --test test/*.test.js",
-    "desktop:run": "cargo run --manifest-path desktop/Cargo.toml",
-    "desktop:build": "cargo build --release --manifest-path desktop/Cargo.toml && strip desktop/target/release/ultimatter-desktop && cp desktop/target/release/ultimatter-desktop bin/ultimatter-desktop-linux-x64"
+    "build:all": "npm run build:linux && npm run build:mac && npm run build:win",
+    "pack:release": "tar -czf bin/ultimatter-linux-x64.tar.gz -C bin ultimatter-linux-x64",
+    "test": "NODE_ENV=test node --test test/*.test.js"
   },
   "keywords": [],
   "author": "",
