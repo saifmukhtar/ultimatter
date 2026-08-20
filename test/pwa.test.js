@@ -26,6 +26,10 @@ test('PWA Module - Web App Manifest & Meta Tags', async (t) => {
     assert.strictEqual(modified.includes('manifest.webmanifest'), true);
     assert.strictEqual(modified.includes('apple-mobile-web-app-capable'), true);
     assert.strictEqual(modified.includes('mobile-web-app-capable'), true);
+    assert.strictEqual(modified.includes('viewport-fit=cover'), true);
+    assert.strictEqual(modified.includes('interactive-widget=resizes-content'), true);
+    assert.strictEqual(modified.includes('touch-action: manipulation'), true);
+    assert.strictEqual(modified.includes('overscroll-behavior-y: contain'), true);
   });
 
   await t.test('does not duplicate PWA tags if already present', () => {
@@ -34,3 +38,4 @@ test('PWA Module - Web App Manifest & Meta Tags', async (t) => {
     assert.strictEqual(result, alreadyInjected);
   });
 });
+
