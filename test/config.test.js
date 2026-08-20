@@ -91,10 +91,13 @@ test('Config Module - Path Resolutions and Permissions', async (t) => {
     assert.strictEqual(activeHtml.includes('OpenCode'), true);
     assert.strictEqual(activeHtml.includes('switchAgent'), true);
     assert.strictEqual(activeHtml.includes('pwaTipBanner'), true);
+    assert.strictEqual(activeHtml.includes('ca-download-card'), true);
+    assert.strictEqual(activeHtml.includes('/api/ca.pem'), true);
 
     // 2. Test empty state when 0 agents active
     const emptyHtml = hub.getHubHtml(network.AGENT_TARGETS, [], 'test-token');
     assert.strictEqual(emptyHtml.includes('Waiting for Desktop Agents'), true);
+    assert.strictEqual(emptyHtml.includes('ca-download-card'), true);
   });
 
   await t.test('config module manages mobile bubble preference', () => {
