@@ -25,7 +25,10 @@ echo "📦 Packaging standalone gateway backend into macOS bundle..."
 npx @yao-pkg/pkg "${ROOT_DIR}/index.js" --output "${APP_BUNDLE}/Contents/MacOS/ultimatter-backend" --targets node22-macos-arm64
 chmod 755 "${APP_BUNDLE}/Contents/MacOS/ultimatter-backend" 2>/dev/null || true
 
-# 3. Copy Icon
+# 4. Copy Apple ICNS and PNG Icons
+if [ -f "${ROOT_DIR}/assets/AppIcon.icns" ]; then
+  cp "${ROOT_DIR}/assets/AppIcon.icns" "${APP_BUNDLE}/Contents/Resources/AppIcon.icns"
+fi
 if [ -f "${ROOT_DIR}/assets/icon.png" ]; then
   cp "${ROOT_DIR}/assets/icon.png" "${APP_BUNDLE}/Contents/Resources/AppIcon.png"
 fi
