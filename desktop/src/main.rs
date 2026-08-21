@@ -67,12 +67,30 @@ Options:
 
     // 4. Initialize native Tao Event Loop and Window
     let event_loop = EventLoop::new();
-    let window = WindowBuilder::new()
+
+    // Load native desktop window icon (for OS taskbar, dock, and titlebar)
+    let window_icon = {
+        const ICON_BYTES: &[u8] = include_bytes!("../../assets/icon.png");
+        if let Ok(img) = image::load_from_memory(ICON_BYTES) {
+            let rgba = img.into_rgba8();
+            let (w, h) = rgba.dimensions();
+            tao::window::Icon::from_rgba(rgba.into_raw(), w, h).ok()
+        } else {
+            None
+        }
+    };
+
+    let mut window_builder = WindowBuilder::new()
         .with_title("Ultimatter Control Panel")
         .with_inner_size(LogicalSize::new(460.0, 760.0))
         .with_min_inner_size(LogicalSize::new(420.0, 680.0))
-        .with_resizable(true)
-        .build(&event_loop)?;
+        .with_resizable(true);
+
+    if let Some(icon) = window_icon {
+        window_builder = window_builder.with_window_icon(Some(icon));
+    }
+
+    let window = window_builder.build(&event_loop)?;
 
     // 5. Initialize Wry WebView (Cross-Platform)
     #[cfg(target_os = "linux")]
