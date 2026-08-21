@@ -160,10 +160,29 @@ To provide a seamless, zero-warning HTTPS experience on local Wi-Fi:
 
 ---
 
-### I. Single Unified Binary Architecture ([`desktop/`](desktop/))
-* **Native Desktop Window:** Built with Rust (`tao` + `wry`), embedding a clean WebKit webview directly inside native GTK / Cocoa / Win32 containers.
-* **Zero WebKit 'W' Default:** GTK window pixbufs and FreeDesktop `.desktop` entries register the official Ultimatter vector icon for desktop launchers and KDE/GNOME dock matching.
-* **Headless Background Server:** Running with `--headless` starts Ultimatter purely in the background for remote servers, Docker containers, and systemd services.
+### I. Multi-Platform Standalone Packaging Pipeline ([`desktop/`](desktop/) & [`packaging/`](packaging/))
+Ultimatter provides 100% self-contained distributions across all major desktop and server platforms with zero host dependencies:
+* **🐧 Linux AppImage (`bin/Ultimatter-x86_64.AppImage`):**
+  * Bundles the **Native Rust Wry/Tao Desktop GUI** (`usr/bin/ultimatter`) and the **Standalone Gateway Backend** (`usr/bin/ultimatter-backend`) into a single SquashFS image with ZSTD block compression (~41MB).
+  * Implements **first-run auto desktop integration** in `AppRun`: automatically installs the official icon to `~/.local/share/icons/` and registers `~/.local/share/applications/ultimatter.desktop` for 1-click launch from the system Start Menu / Dock.
+* **🐧 Linux Standalone Binary (`bin/ultimatter-linux-x64`):**
+  * 100% standalone binary with embedded Node.js 22 runtime for CLI, CI/CD, Docker containers, and systemd headless background servers (`--headless`).
+* **🍎 macOS Application Bundle (`bin/Ultimatter.app` & `bin/ultimatter-macos-arm64`):**
+  * Self-contained macOS bundle containing `AppIcon.icns` and ad-hoc codesigning (`codesign -s -`) to satisfy Apple Silicon M-series security requirements.
+* **🪟 Windows Executable (`bin/ultimatter-windows-x64.exe`):**
+  * Self-contained Windows executable with direct PE resource icon injection (`resedit`), embedding all 6 resolutions (256x256 down to 16x16) of the official logo into the `.exe`.
+
+---
+
+### J. 1-Click Clean Shutdown & IPC Architecture ([`lib/proxy.js`](lib/proxy.js) & [`desktop/src/main.rs`](desktop/src/main.rs))
+* **Graceful HTTP API Shutdown:** Desktop control panel invokes `POST /api/dashboard/shutdown`, prompting `proxy.js` to gracefully close all active HTTP/2 and WebSocket server listeners, destroy active connection pools, and exit with code 0.
+* **Tao / Wry IPC Interceptor:** In native desktop mode, window IPC messages (`window.ipc.postMessage('quit')`) are intercepted by Tao's event loop to trigger `ControlFlow::Exit`, releasing all OS window handles and loopback ports instantly.
+
+---
+
+### K. 1-Tap Mobile Camera Scanner & Onboarding ([`lib/proxy.js`](lib/proxy.js))
+* **Zero-Input Pairing:** When navigating to the Mobile Hub without an active session, Ultimatter serves a streamlined onboarding interface with the glowing brand logo and a **1-Tap Camera Scanner** (`Html5Qrcode`).
+* **Seamless Handshake:** Pointing the camera at the desktop QR code immediately decodes the cryptographic token, establishes the signed 30-day cookie, and transitions to the active Agent Hub in < 300ms.
 
 ---
 
