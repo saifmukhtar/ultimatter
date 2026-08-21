@@ -6,11 +6,12 @@ ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 echo "🚀 Building Ultimatter AppImage..."
 
-# 1. Ensure Linux native binary is built
-if [ ! -f "${ROOT_DIR}/bin/ultimatter-linux-x64" ]; then
-  echo "⚙️ Building Linux native binary first..."
-  (cd "${ROOT_DIR}" && npm run build:linux)
-fi
+# 1. Compile native Rust Wry/Tao Desktop GUI
+echo "🦀 Compiling native Rust Wry/Tao desktop binary..."
+cargo build --release --manifest-path "${ROOT_DIR}/desktop/Cargo.toml"
+strip "${ROOT_DIR}/desktop/target/release/ultimatter"
+mkdir -p "${ROOT_DIR}/bin"
+install -m 755 "${ROOT_DIR}/desktop/target/release/ultimatter" "${ROOT_DIR}/bin/ultimatter-linux-x64"
 
 APP_DIR="${ROOT_DIR}/build/AppDir"
 rm -rf "${APP_DIR}"
@@ -18,9 +19,14 @@ mkdir -p "${APP_DIR}/usr/bin"
 mkdir -p "${APP_DIR}/usr/share/applications"
 mkdir -p "${APP_DIR}/usr/share/icons/hicolor/512x512/apps"
 
-# 2. Copy binary and desktop assets
+# 2. Copy native Rust GUI executable
 cp "${ROOT_DIR}/bin/ultimatter-linux-x64" "${APP_DIR}/usr/bin/ultimatter"
 chmod 755 "${APP_DIR}/usr/bin/ultimatter"
+
+# 3. Compile standalone Node.js Gateway Backend inside AppDir
+echo "📦 Compiling standalone gateway backend binary..."
+npx @yao-pkg/pkg "${ROOT_DIR}/index.js" --output "${APP_DIR}/usr/bin/ultimatter-backend" --targets node22-linux-x64
+chmod 755 "${APP_DIR}/usr/bin/ultimatter-backend"
 
 cp "${ROOT_DIR}/assets/ultimatter.desktop" "${APP_DIR}/ultimatter.desktop"
 cp "${ROOT_DIR}/assets/ultimatter.desktop" "${APP_DIR}/usr/share/applications/ultimatter.desktop"

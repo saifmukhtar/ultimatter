@@ -23,7 +23,32 @@ impl ProcessSupervisor {
             return;
         }
 
-        // Locate gateway entrypoint relative to executable or workspace
+        // 1. First probe for standalone sibling backend binary (packaged inside AppImage / macOS bundle / Windows)
+        if let Ok(exe_path) = std::env::current_exe() {
+            if let Some(exe_dir) = exe_path.parent() {
+                let backend_candidates = [
+                    exe_dir.join("ultimatter-backend"),
+                    exe_dir.join("ultimatter-backend.exe"),
+                    exe_dir.join("resources").join("ultimatter-backend"),
+                    exe_dir.join("..").join("Resources").join("ultimatter-backend"),
+                ];
+                for backend_path in backend_candidates {
+                    if backend_path.exists() {
+                        if let Ok(child) = Command::new(&backend_path)
+                            .arg("--headless")
+                            .stdin(Stdio::null())
+                            .stdout(Stdio::null())
+                            .stderr(Stdio::null())
+                            .spawn() {
+                                self.child = Some(child);
+                                return;
+                            }
+                    }
+                }
+            }
+        }
+
+        // 2. Fall back to local source index.js via Node.js
         let mut candidates = Vec::new();
 
         if let Ok(exe_path) = std::env::current_exe() {
@@ -55,6 +80,25 @@ impl ProcessSupervisor {
 
     /// Runs the gateway in foreground mode (for --headless CLI invocation)
     pub fn run_foreground(&mut self) {
+        if let Ok(exe_path) = std::env::current_exe() {
+            if let Some(exe_dir) = exe_path.parent() {
+                let backend_candidates = [
+                    exe_dir.join("ultimatter-backend"),
+                    exe_dir.join("ultimatter-backend.exe"),
+                    exe_dir.join("resources").join("ultimatter-backend"),
+                    exe_dir.join("..").join("Resources").join("ultimatter-backend"),
+                ];
+                for backend_path in backend_candidates {
+                    if backend_path.exists() {
+                        let _ = Command::new(&backend_path)
+                            .arg("--headless")
+                            .status();
+                        return;
+                    }
+                }
+            }
+        }
+
         let mut candidates = Vec::new();
 
         if let Ok(exe_path) = std::env::current_exe() {
@@ -78,7 +122,7 @@ impl ProcessSupervisor {
             }
         }
 
-        eprintln!("❌ Ultimatter: Failed to locate gateway index.js");
+        eprintln!("❌ Ultimatter: Failed to locate gateway index.js or backend binary");
     }
 }
 
