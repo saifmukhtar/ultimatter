@@ -1,0 +1,10 @@
+[package]
+name = "ultimatter"
+version = "1.0.0"
+description = "Ultimatter Universal AI Gateway"
+edition = "2021"
+
+[dependencies]
+wry = "0.47"
+tao = "0.30"
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "rustls-tls"] }
