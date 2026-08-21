@@ -13,3 +13,6 @@ image = { version = "0.25", default-features = false, features = ["png"] }
 [target.'cfg(target_os = "linux")'.dependencies]
 gtk = { version = "0.18", default-features = false }
 gdk-pixbuf = { version = "0.18", default-features = false }
+
+[target.'cfg(windows)'.build-dependencies]
+winres = "0.1"
