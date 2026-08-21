@@ -11,11 +11,14 @@
     "build:appimage": "bash scripts/build-appimage.sh",
     "build:mac": "npx @yao-pkg/pkg index.js --output bin/ultimatter-macos-arm64 --targets node22-macos-arm64",
     "build:macos:app": "bash packaging/macos/build-app.sh",
-    "build:win": "npx @yao-pkg/pkg index.js --output bin/ultimatter-windows-x64.exe --targets node22-win-x64",
+    "build:win": "npx @yao-pkg/pkg index.js --output bin/ultimatter-windows-x64.exe --targets node22-win-x64 && node scripts/inject-windows-icon.js",
     "build:all": "npm run build:appimage && npm run build:linux && npm run build:mac && npm run build:macos:app && npm run build:win",
     "pack:release": "tar -czf bin/ultimatter-linux-x64.tar.gz -C bin ultimatter-linux-x64",
     "desktop:run": "cargo run --manifest-path desktop/Cargo.toml",
     "test": "NODE_ENV=test node --test test/*.test.js"
+  },
+  "devDependencies": {
+    "resedit": "^0.9.7"
   },
   "keywords": [],
   "author": "",
