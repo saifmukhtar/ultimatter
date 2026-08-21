@@ -58,4 +58,25 @@ test('Proxy Module - Port Definitions and Target Updates', async (t) => {
     const reqDefault = { url: '/view', headers: { host: '127.0.0.1:5864' } };
     assert.strictEqual(proxy.resolveTargetForRequest(reqDefault).id, 'antigravity');
   });
+
+  await t.test('checkAuth validates session cookies and query tokens correctly', () => {
+    const auth = require('../lib/auth');
+    const validCookie = auth.generateSessionCookie();
+
+    // Valid cookie
+    const reqWithCookie = { url: '/agent/opencode', headers: { host: '127.0.0.1:5864', cookie: `mobile_auth=${validCookie}` } };
+    const res1 = proxy.checkAuth(reqWithCookie);
+    assert.strictEqual(res1.auth, true);
+
+    // Valid query token
+    const reqWithToken = { url: `/?token=${auth.SECURE_TOKEN}`, headers: { host: '127.0.0.1:5864' } };
+    const res2 = proxy.checkAuth(reqWithToken);
+    assert.strictEqual(res2.auth, true);
+    assert.strictEqual(res2.hasToken, true);
+
+    // Invalid token
+    const reqInvalid = { url: '/?token=invalid_token_here', headers: { host: '127.0.0.1:5864' } };
+    const res3 = proxy.checkAuth(reqInvalid);
+    assert.strictEqual(res3.auth, false);
+  });
 });
