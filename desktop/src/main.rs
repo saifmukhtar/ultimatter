@@ -98,6 +98,14 @@ Options:
         use tao::platform::unix::WindowExtUnix;
         use wry::WebViewBuilderExtUnix;
 
+        // Set GTK window icon directly using gdk_pixbuf for Linux docks (KDE/GNOME)
+        if let Ok(pixbuf) = gdk_pixbuf::Pixbuf::from_read(std::io::Cursor::new(include_bytes!("../../assets/icon.png"))) {
+            use gtk::prelude::GtkWindowExt;
+            gtk::Window::set_default_icon(&pixbuf);
+            let gtk_win = window.gtk_window();
+            gtk_win.set_icon(Some(&pixbuf));
+        }
+
         let vbox = window.default_vbox().expect("Failed to acquire GTK container vbox");
         WebViewBuilder::new()
             .with_url("http://127.0.0.1:5865/dashboard")
