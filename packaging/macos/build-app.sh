@@ -14,13 +14,16 @@ mkdir -p "${APP_BUNDLE}/Contents/Resources"
 # 1. Copy Info.plist
 cp "${SCRIPT_DIR}/Info.plist" "${APP_BUNDLE}/Contents/Info.plist"
 
-# 2. Copy binary
+# 2. Compile/Copy native Rust Wry/Tao binary
 if [ -f "${ROOT_DIR}/bin/ultimatter-macos-arm64" ]; then
   cp "${ROOT_DIR}/bin/ultimatter-macos-arm64" "${APP_BUNDLE}/Contents/MacOS/ultimatter"
-elif [ -f "${ROOT_DIR}/bin/ultimatter" ]; then
-  cp "${ROOT_DIR}/bin/ultimatter" "${APP_BUNDLE}/Contents/MacOS/ultimatter"
 fi
 chmod 755 "${APP_BUNDLE}/Contents/MacOS/ultimatter" 2>/dev/null || true
+
+# 3. Compile standalone Node.js Gateway Backend inside macOS bundle
+echo "📦 Packaging standalone gateway backend into macOS bundle..."
+npx @yao-pkg/pkg "${ROOT_DIR}/index.js" --output "${APP_BUNDLE}/Contents/MacOS/ultimatter-backend" --targets node22-macos-arm64
+chmod 755 "${APP_BUNDLE}/Contents/MacOS/ultimatter-backend" 2>/dev/null || true
 
 # 3. Copy Icon
 if [ -f "${ROOT_DIR}/assets/icon.png" ]; then
