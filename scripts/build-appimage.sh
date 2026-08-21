@@ -35,11 +35,52 @@ cp "${ROOT_DIR}/assets/icon.png" "${APP_DIR}/ultimatter.png"
 cp "${ROOT_DIR}/assets/icon.png" "${APP_DIR}/.DirIcon"
 cp "${ROOT_DIR}/assets/icon.png" "${APP_DIR}/usr/share/icons/hicolor/512x512/apps/ultimatter.png"
 
-# 3. Create AppRun launcher
+# 3. Create Self-Integrating AppRun launcher
 cat << 'EOF' > "${APP_DIR}/AppRun"
 #!/bin/sh
 HERE="$(dirname "$(readlink -f "${0}")")"
 export PATH="${HERE}/usr/bin:${PATH}"
+
+# Automatic Desktop & Icon Integration on First Launch
+if [ -n "${APPIMAGE}" ]; then
+  DESKTOP_DIR="${HOME}/.local/share/applications"
+  ICON_DIR="${HOME}/.local/share/icons/hicolor/256x256/apps"
+  DESKTOP_FILE="${DESKTOP_DIR}/ultimatter.desktop"
+  ICON_FILE="${ICON_DIR}/ultimatter.png"
+
+  if [ ! -f "${DESKTOP_FILE}" ] || [ ! -f "${ICON_FILE}" ]; then
+    mkdir -p "${DESKTOP_DIR}" "${ICON_DIR}" 2>/dev/null || true
+    if [ -f "${HERE}/ultimatter.png" ]; then
+      cp "${HERE}/ultimatter.png" "${ICON_FILE}" 2>/dev/null || true
+    fi
+
+    cat << DESKTOPEOF > "${DESKTOP_FILE}"
+[Desktop Entry]
+Name=Ultimatter
+GenericName=Universal AI Gateway
+Comment=Universal AI Agent Gateway for Antigravity and OpenCode
+Exec="${APPIMAGE}" %U
+Icon=${ICON_FILE}
+Terminal=false
+Type=Application
+Categories=Development;Utility;
+StartupWMClass=ultimatter
+Keywords=AI;Agent;Antigravity;OpenCode;Gateway;Remote;
+DESKTOPEOF
+    chmod 644 "${DESKTOP_FILE}" 2>/dev/null || true
+
+    if command -v update-desktop-database >/dev/null 2>&1; then
+      update-desktop-database "${DESKTOP_DIR}" >/dev/null 2>&1 || true
+    fi
+    if command -v kbuildsycoca5 >/dev/null 2>&1; then
+      kbuildsycoca5 >/dev/null 2>&1 || true
+    elif command -v kbuildsycoca6 >/dev/null 2>&1; then
+      kbuildsycoca6 >/dev/null 2>&1 || true
+    fi
+  fi
+fi
+
+# Execute Native Desktop GUI
 exec "${HERE}/usr/bin/ultimatter" "$@"
 EOF
 chmod 755 "${APP_DIR}/AppRun"
