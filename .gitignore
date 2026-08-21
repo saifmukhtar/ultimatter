@@ -15,6 +15,7 @@ key.pem
 
 # Binaries & Executables
 bin/
+build/
 dist/
 ultimatter
 ultimatter.exe

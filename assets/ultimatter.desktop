@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Ultimatter
+GenericName=AI Gateway
+Comment=Universal AI Agent Gateway for Antigravity and OpenCode
+Exec=ultimatter %U
+Icon=ultimatter
+Terminal=false
+Type=Application
+Categories=Development;Utility;
+StartupWMClass=ultimatter
+Keywords=AI;Agent;Antigravity;OpenCode;Gateway;Remote;
