@@ -7,11 +7,12 @@
   "scripts": {
     "start": "node index.js",
     "build": "npm run build:linux",
-    "build:linux": "npx @yao-pkg/pkg index.js --output bin/ultimatter-linux-x64 --targets node22-linux-x64",
-    "build:mac": "npx @yao-pkg/pkg index.js --output bin/ultimatter-macos-arm64 --targets node22-macos-arm64",
-    "build:win": "npx @yao-pkg/pkg index.js --output bin/ultimatter-windows-x64.exe --targets node22-win-x64",
+    "build:linux": "cargo build --release --manifest-path desktop/Cargo.toml && strip desktop/target/release/ultimatter && cp desktop/target/release/ultimatter bin/ultimatter-linux-x64",
+    "build:mac": "cargo build --release --target aarch64-apple-darwin --manifest-path desktop/Cargo.toml 2>/dev/null && cp desktop/target/aarch64-apple-darwin/release/ultimatter bin/ultimatter-macos-arm64 || npx @yao-pkg/pkg index.js --output bin/ultimatter-macos-arm64 --targets node22-macos-arm64",
+    "build:win": "cargo build --release --target x86_64-pc-windows-gnu --manifest-path desktop/Cargo.toml 2>/dev/null && cp desktop/target/x86_64-pc-windows-gnu/release/ultimatter.exe bin/ultimatter-windows-x64.exe || npx @yao-pkg/pkg index.js --output bin/ultimatter-windows-x64.exe --targets node22-win-x64",
     "build:all": "npm run build:linux && npm run build:mac && npm run build:win",
     "pack:release": "tar -czf bin/ultimatter-linux-x64.tar.gz -C bin ultimatter-linux-x64",
+    "desktop:run": "cargo run --manifest-path desktop/Cargo.toml",
     "test": "NODE_ENV=test node --test test/*.test.js"
   },
   "keywords": [],
