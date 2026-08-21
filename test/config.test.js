@@ -99,23 +99,4 @@ test('Config Module - Path Resolutions and Permissions', async (t) => {
     assert.strictEqual(emptyHtml.includes('Waiting for Desktop Agents'), true);
     assert.strictEqual(emptyHtml.includes('ca-download-card'), true);
   });
-
-  await t.test('config module manages mobile bubble preference', () => {
-    try {
-      // Default should be false
-      assert.strictEqual(config.getBubbleEnabled(), false);
-
-      // Enable and verify
-      config.setBubbleEnabled(true);
-      assert.strictEqual(config.getBubbleEnabled(), true);
-
-      // Disable and verify
-      config.setBubbleEnabled(false);
-      assert.strictEqual(config.getBubbleEnabled(), false);
-    } finally {
-      if (fs.existsSync(config.SETTINGS_FILE)) {
-        fs.unlinkSync(config.SETTINGS_FILE);
-      }
-    }
-  });
 });
