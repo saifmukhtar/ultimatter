@@ -11,6 +11,7 @@ Ultimatter is built on the **Zero-Touch Outer Gateway** pattern:
 * **100% Decoupled:** Ultimatter does not patch, modify, or inject plugins into Antigravity or OpenCode on disk. It runs as an independent daemon in user space.
 * **Update-Proof:** Because Ultimatter communicates strictly over loopback TCP sockets (`127.0.0.1`), IDE updates, restarts, or crashes will never corrupt or break the mobile bridge.
 * **Direct Real-Time Access:** Connects your mobile browser directly to the exact live AI agent processes on your machine with zero mockups or third-party web clones.
+* **Pure Full-Screen Workbench:** Delivers an uncluttered, native IDE experience with zero injected DOM bubbles or screen overlays.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -32,9 +33,10 @@ Ultimatter is built on the **Zero-Touch Outer Gateway** pattern:
 │  ┌───────────────────────────────────────────────────────────────────────┐  │
 │  │                HTTP/2 & WebSocket Reverse Proxy Engine                │  │
 │  │   • SNI Multi-Cert Handler (mkcert / Let's Encrypt MagicDNS)          │  │
+│  │   • One-Time QR Token Handshake & Clean URL Redirect                  │  │
+│  │   • Mobile Agent Hub at Root (`/`)                                    │  │
 │  │   • Persistent TCP Connection Pools (TCP_NODELAY + Keep-Alive)       │  │
 │  │   • Mobile Viewport Tuning (interactive-widget=resizes-content)       │  │
-│  │   • Shadow DOM Encapsulated Portal Injection (<ultimatter-portal>)    │  │
 │  └──────────────────────────────────┬────────────────────────────────────┘  │
 │                                     │                                       │
 │  ┌──────────────────────────────────▼────────────────────────────────────┐  │
@@ -42,6 +44,7 @@ Ultimatter is built on the **Zero-Touch Outer Gateway** pattern:
 │  │     • In-Memory /proc/net/tcp Fingerprinting (0.0% Idle CPU)          │  │
 │  │     • Two-Stage Active HTTPS/HTTP Probe & Adaptive Backoff            │  │
 │  └──────────────────────────────────┬────────────────────────────────────┘  │
+│                                     │                                       │
 └─────────────────────────────────────┼───────────────────────────────────────┘
                                       │
               ⚡ HTTP/1.1 + WebSocket ├───► 🛸 Google Antigravity (:43675)
@@ -54,10 +57,11 @@ Ultimatter is built on the **Zero-Touch Outer Gateway** pattern:
 
 | Module | File | Primary Responsibility |
 | :--- | :--- | :--- |
+| **Native Desktop GUI** | [`desktop/src/main.rs`](desktop/src/main.rs) | Cross-platform Tao event loop + Wry WebKit webview with GTK dock icon integration. |
+| **Process Supervisor** | [`desktop/src/supervisor.rs`](desktop/src/supervisor.rs) | Automatic daemon lifecycle management, port probe, and graceful child process termination. |
 | **CLI & Lifecycle** | [`index.js`](index.js) | Single-instance socket lock, signal handling, and desktop/headless lifecycle. |
-| **Reverse Proxy Core** | [`lib/proxy.js`](lib/proxy.js) | HTTP/2 multiplexing, SNI certificate routing, persistent connection pooling, and WebSocket duplex streaming. |
-| **Agent Hub & Switcher** | [`lib/hub.js`](lib/hub.js) | Mobile agent dashboard, 1-tap target switching, and first-time PWA home-screen guidance. |
-| **Portal & Switcher Drawer** | [`lib/bubble.js`](lib/bubble.js) | Shadow DOM encapsulated portal (`<ultimatter-portal>`), draggable touch physics, and 8px backdrop blur switcher. |
+| **Reverse Proxy Core** | [`lib/proxy.js`](lib/proxy.js) | HTTP/2 multiplexing, SNI certificate routing, token handshake redirect, and WebSocket duplex streaming. |
+| **Mobile Agent Hub** | [`lib/hub.js`](lib/hub.js) | Mobile agent launcher at root (`/`), live status cards, 1-tap switching, and Root CA downloads. |
 | **Network & Discovery** | [`lib/network.js`](lib/network.js) | Zero-fork `/proc/net/tcp` socket fingerprinting, adaptive backoff, and multi-agent target definitions (`AGENT_TARGETS`). |
 | **Cryptographic Auth** | [`lib/auth.js`](lib/auth.js) | 256-bit token generator, HMAC-SHA256 cookie signer, and 5-second in-memory session micro-caching. |
 | **Security Firewall** | [`lib/security.js`](lib/security.js) | Brute-force rate limiter, 1-second burst debouncing, dual-stack IP normalizer, and instant unban registry. |
@@ -79,23 +83,21 @@ Unlike traditional tools that continuously spawn child processes (`ss`, `lsof`, 
 
 ---
 
-### B. Universal Agent Target Router & Mobile Hub ([`lib/hub.js`](lib/hub.js) & [`lib/network.js`](lib/network.js))
-Ultimatter natively tracks and routes between active AI coding agents:
-
+### B. Mobile Agent Hub at Root (`/`) & Clean URL Handshake ([`lib/proxy.js`](lib/proxy.js) & [`lib/hub.js`](lib/hub.js))
+* **One-Time QR Token Handshake:** When scanning the QR code containing `?token=...`, the proxy verifies the token, sets a 30-day signed HMAC session cookie (`mobile_auth`), and issues a clean `302 Found` redirect to `/`.
+* **Clean Address Bar & Bookmarks:** Browser address bars and PWA shortcuts maintain clean URLs (`https://<ip>:5864/`) with zero token query strings.
 * **Target Definitions:**
   * 🛸 **Google Antigravity:** Port `43675` (or dynamic candidate scanned from `language_server`).
   * 👐 **OpenCode:** Port `4096` (`opencode web`).
-* **Hot-Switching API:** Calling `POST /api/switch-agent?id=<agentId>` dynamically rebinds proxy upstream targets in `0.001ms` without interrupting active client HTTP/2 connections.
-* **Ultimatter Mobile Hub (`/hub`):** Server-rendered Apple HIG card dashboard allowing instant 1-tap switching between running agents.
+* **Fast Agent Switching:** Tapping any agent card on the Hub launches that agent directly at `/agent/:id` with full mobile viewport tuning.
 
 ---
 
-### C. Shadow DOM Encapsulated Portal & Floating Bubble ([`lib/bubble.js`](lib/bubble.js))
-To provide seamless mobile switching without modifying the upstream IDE:
-
-* **Shadow DOM Isolation:** Injects `<ultimatter-portal>` into HTML responses. All styles, drawer components, and bubble elements are encapsulated inside `#shadow-root` with zero CSS bleed into Antigravity or OpenCode.
-* **Draggable Touch Physics:** Supports touch dragging with velocity momentum and automatic snapping to the nearest screen edge.
-* **Switching Drawer:** Features an Apple HIG light bottom sheet with `backdrop-filter: blur(8px)`, spring physics (`cubic-bezier(0.16, 1, 0.3, 1)`), and instant visual/haptic feedback (`navigator.vibrate(8)`).
+### C. Pure Full-Screen Native IDE Experience
+To preserve precious mobile screen real estate and maximize battery life:
+* **Zero DOM Injections:** No floating overlays or Shadow DOM buttons cover up editor minimaps, scrollbars, or bottom terminal action bars.
+* **Zero Polling Overhead:** Eliminates continuous background polling inside the active IDE session.
+* **System Gesture Navigation:** Users simply swipe back or tap the browser back button to return to the **Hub** at any time.
 
 ---
 
@@ -148,26 +150,20 @@ The desktop control panel continuously monitors the local environment to provide
 
 ---
 
-### H. Zero-Fork Fast-Path Root CA Serving & Mobile Hub Download ([`lib/network.js`](lib/network.js) & [`lib/hub.js`](lib/hub.js))
+### H. Dual-Format Root CA Serving & Mobile Hub Download ([`lib/network.js`](lib/network.js) & [`lib/hub.js`](lib/hub.js))
 To provide a seamless, zero-warning HTTPS experience on local Wi-Fi:
 * **Instant Path Resolution:** `getRootCaPath()` directly checks standard OS CAROOT directories (`~/.local/share/mkcert/`, `~/Library/Application Support/mkcert/`, `%LOCALAPPDATA%/mkcert/`) in 0ms without spawning child processes.
-* **Public Cert HTTPS Endpoint (`/api/ca.pem`):** Serves strictly the public X.509 certificate (`rootCA.pem`) with `Content-Type: application/x-x509-ca-cert` and `Content-Disposition: attachment; filename="ultimatter-root-ca.pem"`.
+* **Public Cert HTTPS Endpoints:**
+  * `/api/ca.pem` & `/api/rootCA.pem` $\rightarrow$ Serves standard `rootCA.pem`.
+  * `/api/ca.crt` & `/api/rootCA.crt` $\rightarrow$ Serves direct `.crt` format for Android Certificate Installers.
 * **Cryptographic Isolation:** Private keys (`rootCA-key.pem`) remain strictly locked in host OS private storage (`-r--------`) and are never exposed or served over the network.
-* **Mobile Hub Card:** Displays a prominent 1-tap download card on the mobile hub for instant iOS and Android profile installation.
 
 ---
 
-### I. Dedicated Floating App-Mode Window & Headless Server ([`lib/network.js`](lib/network.js) & [`index.js`](index.js))
-* **Dedicated Floating App Window:** On desktop startup, Ultimatter detects available engines (Chrome, Brave, Edge, Chromium) and opens a dedicated, chromeless application window (`--app=http://localhost:5865/dashboard --window-size=460,760`). No browser tabs, bookmarks, or address bars clutter the user's workspace.
-* **Headless Background Server:** Running with `--headless` starts Ultimatter purely in the background for remote headless servers, Docker containers, and systemd services.
-
----
-
-### J. Zero-Dependency Standalone Packaging
-Ultimatter is compiled using `@yao-pkg/pkg` into a single standalone binary per platform:
-* **Embedded Node.js Engine:** Embeds the Node.js v22 runtime directly inside the executable.
-* **Bundled mkcert Binaries:** Includes official `mkcert v1.4.4` platform binaries (`assets/mkcert-*`) that auto-extract to `~/.config/ultimatter/bin/` if not present on the host OS.
-* **Self-Contained Web GUI:** Embeds all HTML, CSS, vector SVG icons, and QR generators into the binary with zero external runtime dependencies.
+### I. Single Unified Binary Architecture ([`desktop/`](desktop/))
+* **Native Desktop Window:** Built with Rust (`tao` + `wry`), embedding a clean WebKit webview directly inside native GTK / Cocoa / Win32 containers.
+* **Zero WebKit 'W' Default:** GTK window pixbufs and FreeDesktop `.desktop` entries register the official Ultimatter vector icon for desktop launchers and KDE/GNOME dock matching.
+* **Headless Background Server:** Running with `--headless` starts Ultimatter purely in the background for remote servers, Docker containers, and systemd services.
 
 ---
 
