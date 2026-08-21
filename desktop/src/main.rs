@@ -5,7 +5,7 @@ use supervisor::ProcessSupervisor;
 use tao::{
     dpi::LogicalSize,
     event::{Event, StartCause, WindowEvent},
-    event_loop::{ControlFlow, EventLoop},
+    event_loop::{ControlFlow, EventLoopBuilder},
     window::WindowBuilder,
 };
 use wry::WebViewBuilder;
@@ -66,7 +66,13 @@ Options:
     }
 
     // 4. Initialize native Tao Event Loop and Window
-    let event_loop = EventLoop::new();
+    #[derive(Debug)]
+    enum UserEvent {
+        Quit,
+    }
+
+    let event_loop = EventLoopBuilder::<UserEvent>::with_user_event().build();
+    let proxy = event_loop.create_proxy();
 
     // Load native desktop window icon (for OS taskbar, dock, and titlebar)
     let window_icon = {
@@ -93,6 +99,13 @@ Options:
     let window = window_builder.build(&event_loop)?;
 
     // 5. Initialize Wry WebView (Cross-Platform)
+    let proxy_ipc = proxy.clone();
+    let ipc_handler = move |req: wry::http::Request<String>| {
+        if req.body() == "quit" {
+            let _ = proxy_ipc.send_event(UserEvent::Quit);
+        }
+    };
+
     #[cfg(target_os = "linux")]
     let _webview = {
         use tao::platform::unix::WindowExtUnix;
@@ -109,12 +122,14 @@ Options:
         let vbox = window.default_vbox().expect("Failed to acquire GTK container vbox");
         WebViewBuilder::new()
             .with_url("http://127.0.0.1:5865/dashboard")
+            .with_ipc_handler(ipc_handler)
             .build_gtk(vbox)?
     };
 
     #[cfg(not(target_os = "linux"))]
     let _webview = WebViewBuilder::new()
         .with_url("http://127.0.0.1:5865/dashboard")
+        .with_ipc_handler(ipc_handler)
         .build(&window)?;
 
     // 6. Run Event Loop
@@ -123,6 +138,9 @@ Options:
 
         match event {
             Event::NewEvents(StartCause::Init) => {},
+            Event::UserEvent(UserEvent::Quit) => {
+                *control_flow = ControlFlow::Exit;
+            },
             Event::WindowEvent {
                 event: WindowEvent::CloseRequested,
                 ..
