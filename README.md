@@ -52,18 +52,15 @@ Instead of running a stripped-down mobile client or third-party web clone, Ultim
 ## ⚡ Quick Start
 
 ### 1. Launch Ultimatter
-Download the standalone executable for your operating system from **[GitHub Releases](https://github.com/saifmukhtar/ultimatter/releases)**:
-
-* **Linux (Desktop):** Download and double-click `Ultimatter-x86_64.AppImage` (runs native Rust Wry GUI and integrates automatically with your system menu):
-  ```bash
-  ./Ultimatter-x86_64.AppImage
-  ```
-* **Linux (Server / Headless):** Run the standalone binary with `--headless`:
-  ```bash
-  ./ultimatter-linux-x64 --headless
-  ```
-* **macOS:** Open `Ultimatter.app` or run `./ultimatter-macos-arm64`.
+Download the standalone application for your platform from **[GitHub Releases](https://github.com/saifmukhtar/ultimatter/releases)**:
+* **Linux:** Double-click `Ultimatter-x86_64.AppImage` (runs native window and integrates into your system application menu).
+* **macOS:** Open `Ultimatter.app`.
 * **Windows:** Double-click `ultimatter-windows-x64.exe`.
+
+> 💡 **Headless / Server Mode:** If running on a remote headless Linux server or Docker container without a GUI, launch with the `--headless` flag:
+> ```bash
+> ./ultimatter-linux-x64 --headless
+> ```
 
 ### 2. Connect Your Phone
 1. Scan the **QR Code** displayed on the desktop control panel with your phone's camera (or open `https://<ip>:5864` on your phone and tap **Scan QR Code with Camera**).
@@ -102,8 +99,6 @@ npm run build:all
 
 ---
 
----
-
 ## 🛡️ Security & Threat Model
 
 | Security Invariant | Implementation & Defense Mechanism |
@@ -120,11 +115,9 @@ npm run build:all
 ## ❓ Frequently Asked Questions (FAQs)
 
 <details>
-<summary><strong>1. How does Ultimatter differ from VS Code Tunnels / SSH Port Forwarding?</strong></summary>
+<summary><strong>1. What is Ultimatter and how does it fit into the Antimatter ecosystem?</strong></summary>
 <br>
-VS Code Tunnels require signing into Microsoft accounts, running third-party server binaries, and routing through Microsoft Azure relay servers with noticeable latency. SSH port forwarding requires manual terminal setups, lacks dynamic multi-agent port discovery, and breaks when your phone switches between Wi-Fi and 5G. 
-
-Ultimatter is **100% self-hosted, peer-to-peer, zero-cloud, and zero-touch** — it automatically discovers agent ports in memory, injects mobile touch/keyboard adaptations, and auto-reconnects seamlessly under 200ms when roaming.
+Ultimatter is the zero-touch, standalone desktop-to-mobile gateway built for the Antimatter ecosystem and AI coding agents (Google Antigravity & OpenCode). Unlike complex cloud setups or remote tunneling services, Ultimatter requires zero cloud accounts, zero third-party relay servers, and zero modifications to your local IDE. It acts as an intelligent outer gateway, providing instant peer-to-peer mobile browser & PWA access with native touchscreen optimizations over local Wi-Fi or 5G.
 </details>
 
 <details>
