@@ -16,8 +16,9 @@ Instead of running a stripped-down mobile client or third-party web clone, Ultim
 ## ✨ Features
 
 ### 🤖 First-Class Agent Support
-* 🛸 **Google Antigravity:** Full agent UI, reasoning thought process streams, subagents, and MCP tool workflows.
-* 👐 **OpenCode:** Instant mobile web access (`opencode web`) with automatic port discovery.
+* 🛸 **Google Antigravity:** Full agent UI, reasoning thought process streams, subagents, and MCP tool workflows (:43675).
+* 👐 **OpenCode:** Instant mobile web access (`opencode web`) with automatic port discovery (:4096).
+* 🧠 **Claude Code (CloudCLI):** Full web workbench for Anthropic Claude CLI, terminal execution, and MCP tools (:3001).
 * 🏠 **Ultimatter Mobile Hub (Root `/`):** Live status cards for all active agents, 1-tap launching, and fast switching.
 
 ### 📱 Pure Full-Screen Mobile & PWA Experience
