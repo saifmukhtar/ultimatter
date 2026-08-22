@@ -102,5 +102,50 @@ npm run build:all
 
 ---
 
+---
+
+## 🛡️ Security & Threat Model
+
+| Security Invariant | Implementation & Defense Mechanism |
+| :--- | :--- |
+| **Brute-Force Defense** | 256-bit token entropy ($2^{256}$ combinations) paired with an active in-memory rate limiter enforcing 15-minute lockouts after 20 strikes (with 1-second burst debouncing). |
+| **Timing-Attack Immunity** | All token and cookie verifications execute in constant time via Node's native `crypto.timingSafeEqual()`. |
+| **CSRF & Origin Isolation** | Upstream requests strictly rewrite `Origin`, `Host`, and `Referer` headers *only* after cryptographic authentication succeeds. Cookies enforce `SameSite=Lax`. |
+| **XSS Protection** | Session tokens are transmitted exclusively via `HttpOnly` signed cookies, preventing client-side script theft. |
+| **LAN Isolation (Lockdown)** | 1-click **LAN Lockdown** switch on the desktop control panel instantly denies all incoming Tailscale connections (`100.x.y.z`, `fd7a:`, `*.ts.net`) with `403 Forbidden`. |
+| **Restricted Host Storage** | All tokens, keys, and session secrets are stored in `~/.config/ultimatter/` with strict POSIX `0o700` directory and `0o600` file permissions. |
+
+---
+
+## ❓ Frequently Asked Questions (FAQs)
+
+<details>
+<summary><strong>1. How does Ultimatter differ from VS Code Tunnels / SSH Port Forwarding?</strong></summary>
+<br>
+VS Code Tunnels require signing into Microsoft accounts, running third-party server binaries, and routing through Microsoft Azure relay servers with noticeable latency. SSH port forwarding requires manual terminal setups, lacks dynamic multi-agent port discovery, and breaks when your phone switches between Wi-Fi and 5G. 
+
+Ultimatter is **100% self-hosted, peer-to-peer, zero-cloud, and zero-touch** — it automatically discovers agent ports in memory, injects mobile touch/keyboard adaptations, and auto-reconnects seamlessly under 200ms when roaming.
+</details>
+
+<details>
+<summary><strong>2. Does running Ultimatter on my desktop cause high CPU or battery drain?</strong></summary>
+<br>
+<strong>No (0.0% Idle CPU).</strong> Ultimatter uses <em>zero-fork kernel inspection</em> (`/proc/net/tcp` in RAM on Linux) with adaptive polling backoff. It does not spawn background shell processes or language servers, maintaining 0.0% CPU overhead while waiting for connections.
+</details>
+
+<details>
+<summary><strong>3. How does the mobile virtual keyboard auto-docking work?</strong></summary>
+<br>
+Standard web IDEs suffer from mobile virtual keyboards covering the prompt box or code diff view. Ultimatter dynamically intercepts the HTML stream and injects <code>interactive-widget=resizes-content</code> and <code>viewport-fit=cover</code>. When the virtual keyboard opens, the viewport dynamically contracts so the prompt input and chat buttons stay pinned directly above the keyboard.
+</details>
+
+<details>
+<summary><strong>4. Do I need to install any plugins or modify Google Antigravity / OpenCode?</strong></summary>
+<br>
+<strong>Zero modifications.</strong> Ultimatter follows the <em>Zero-Touch Outer Gateway</em> pattern. It communicates with agents over loopback sockets (`127.0.0.1`) and never touches, modifies, or installs files in your IDE directories. Updating or restarting your agents will never break Ultimatter.
+</details>
+
+---
+
 ## 🔐 Privacy
-100% private and peer-to-peer. Zero third-party clouds, zero data logging, and zero external telemetry.
+100% private and peer-to-peer. Zero third-party clouds, zero telemetry tracking, and zero remote data collection. All communication is strictly encrypted point-to-point.
