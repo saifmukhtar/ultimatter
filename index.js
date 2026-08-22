@@ -1,111 +1,33 @@
-const http = require('http');
-const network = require('./lib/network');
-const proxy = require('./lib/proxy');
-
-const args = process.argv.slice(2);
-
-// Handle CLI help flag
-if (args.includes('--help') || args.includes('-h')) {
-  console.log(`
-🚀 Ultimatter
-
-Usage:
-  ultimatter [options]
-
-Options:
-  --headless       Run in background without launching a desktop GUI window
-  -v, --version    Print Ultimatter version and exit
-  -h, --help       Show this help message and exit
-`);
-  process.exit(0);
-}
-
-// Handle CLI version flag
-if (args.includes('--version') || args.includes('-v')) {
-  const pkg = require('./package.json');
-  console.log(`v${pkg.version}`);
-  process.exit(0);
-}
-
-const isHeadless = args.includes('--headless');
-
 /**
- * Checks if another Ultimatter process is already running in the background
- * by probing the local dashboard status endpoint.
+ * Ultimatter - Universal Mobile Gateway SDK for Local Dev & AI Coding Agents
  * 
- * @returns {Promise<boolean>} True if another instance is already running
+ * Provides programmatic APIs to wrap any local web application or service
+ * into a secure, mobile-paired, HTTP/2 reverse proxy with automatic local TLS
+ * and Tailscale MagicDNS encryption.
  */
-const checkIfAlreadyRunning = () => {
-  return new Promise((resolve) => {
-    const req = http.get(`http://127.0.0.1:${proxy.DASHBOARD_PORT}/api/dashboard/status`, (res) => {
-      let body = '';
-      res.on('data', (chunk) => { body += chunk; });
-      res.on('end', () => {
-        try {
-          const json = JSON.parse(body);
-          resolve(!!json.token);
-        } catch (e) {
-          resolve(false);
-        }
-      });
-    });
 
-    req.on('error', () => resolve(false));
-    req.setTimeout(800, () => {
-      req.destroy();
-      resolve(false);
-    });
-  });
+const { createMobileGateway } = require('./lib/gateway');
+const proxy = require('./lib/proxy');
+const network = require('./lib/network');
+const auth = require('./lib/auth');
+const security = require('./lib/security');
+const dashboard = require('./lib/dashboard');
+const hub = require('./lib/hub');
+const pwa = require('./lib/pwa');
+const version = require('./lib/version');
+
+module.exports = {
+  createMobileGateway,
+  startProxy: proxy.startProxy,
+  updateTargets: proxy.updateTargets,
+  resolveTargetForRequest: proxy.resolveTargetForRequest,
+  PROXY_PORT: proxy.PROXY_PORT,
+  DASHBOARD_PORT: proxy.DASHBOARD_PORT,
+  network,
+  auth,
+  security,
+  dashboard,
+  hub,
+  pwa,
+  version
 };
-
-/**
- * Main application bootstrap lifecycle.
- */
-const startBridge = async () => {
-  try {
-    const isRunning = await checkIfAlreadyRunning();
-    const dashboardUrl = `http://localhost:${proxy.DASHBOARD_PORT}/dashboard`;
-
-    // 1. Single-Instance Re-Opener
-    if (isRunning) {
-      console.log(`\n🚀 Ultimatter is already active in background.`);
-      if (!isHeadless) {
-        console.log(`Re-opening Control Panel in desktop window...\n`);
-        network.openBrowser(dashboardUrl);
-      }
-      return;
-    }
-
-    // 2. Local Wi-Fi SSL Initialization
-    const localIp = network.getLocalIp();
-    network.generateSSLCertificate(localIp);
-
-    // 3. Tailscale MagicDNS TLS Initialization
-    let validTailscaleDns = null;
-    const tailscaleDns = network.getTailscaleDns();
-    if (tailscaleDns) {
-      const ok = network.generateTailscaleCert(tailscaleDns);
-      if (ok) validTailscaleDns = tailscaleDns;
-    }
-
-    // 4. Start Reverse Proxy (HTTP/2 on :5864, Local Dashboard on :5865)
-    proxy.startProxy(localIp, validTailscaleDns);
-
-    // 5. Start Background Agent Port Discovery Watcher
-    network.watchIdePort((targets) => {
-      proxy.updateTargets(targets);
-    });
-
-    // 6. Launch Standalone GUI Window on Desktop (unless running --headless)
-    if (!isHeadless) {
-      network.openBrowser(dashboardUrl);
-    } else {
-      console.log(`⚙️  Headless Mode: Desktop GUI window will not open automatically.`);
-    }
-  } catch (err) {
-    console.error("❌ Ultimatter Startup Failed:", err.message);
-    process.exit(1);
-  }
-};
-
-startBridge();
