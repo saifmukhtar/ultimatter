@@ -14,7 +14,8 @@ key.pem
 *.pem
 
 # Binaries & Executables
-bin/
+bin/*
+!bin/cli.js
 build/
 dist/
 ultimatter

@@ -1,17 +1,26 @@
 {
   "name": "ultimatter",
   "version": "1.0.0",
-  "description": "The Ultimate Mobile Gateway for Antigravity",
+  "description": "Universal Mobile Gateway & Reverse Proxy SDK for Local Dev & AI Coding Agents",
   "main": "index.js",
-  "bin": "index.js",
+  "bin": {
+    "ultimatter": "bin/cli.js"
+  },
+  "files": [
+    "lib/",
+    "bin/cli.js",
+    "index.js",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
-    "start": "node index.js",
+    "start": "node bin/cli.js",
     "build": "npm run build:appimage",
-    "build:linux": "npx @yao-pkg/pkg index.js --output bin/ultimatter-linux-x64 --targets node22-linux-x64",
+    "build:linux": "npx @yao-pkg/pkg bin/cli.js --output bin/ultimatter-linux-x64 --targets node22-linux-x64",
     "build:appimage": "bash scripts/build-appimage.sh",
-    "build:mac": "npx @yao-pkg/pkg index.js --output bin/ultimatter-macos-arm64 --targets node22-macos-arm64",
+    "build:mac": "npx @yao-pkg/pkg bin/cli.js --output bin/ultimatter-macos-arm64 --targets node22-macos-arm64",
     "build:macos:app": "bash packaging/macos/build-app.sh",
-    "build:win": "npx @yao-pkg/pkg index.js --output bin/ultimatter-windows-x64.exe --targets node22-win-x64 && node scripts/inject-windows-icon.js",
+    "build:win": "npx @yao-pkg/pkg bin/cli.js --output bin/ultimatter-windows-x64.exe --targets node22-win-x64 && node scripts/inject-windows-icon.js",
     "build:all": "npm run build:appimage && npm run build:linux && npm run build:mac && npm run build:macos:app && npm run build:win",
     "pack:release": "tar -czf bin/ultimatter-linux-x64.tar.gz -C bin ultimatter-linux-x64",
     "desktop:run": "cargo run --manifest-path desktop/Cargo.toml",

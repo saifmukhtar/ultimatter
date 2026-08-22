@@ -25,7 +25,7 @@ chmod 755 "${APP_DIR}/usr/bin/ultimatter"
 
 # 3. Compile standalone Node.js Gateway Backend inside AppDir
 echo "📦 Compiling standalone gateway backend binary..."
-npx @yao-pkg/pkg "${ROOT_DIR}/index.js" --output "${APP_DIR}/usr/bin/ultimatter-backend" --targets node22-linux-x64
+npx @yao-pkg/pkg "${ROOT_DIR}/bin/cli.js" --output "${APP_DIR}/usr/bin/ultimatter-backend" --targets node22-linux-x64
 chmod 755 "${APP_DIR}/usr/bin/ultimatter-backend"
 
 cp "${ROOT_DIR}/assets/ultimatter.desktop" "${APP_DIR}/ultimatter.desktop"
