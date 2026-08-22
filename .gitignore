@@ -31,6 +31,11 @@ npm-debug.log*
 Thumbs.db
 .vscode/
 .idea/
+*.swp
+*.swo
+
+# Temporary Repositories
+tmp-repo/
 
 # Rust Build Artifacts
 target/
