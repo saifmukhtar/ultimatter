@@ -62,10 +62,10 @@ test('Config Module - Path Resolutions and Permissions', async (t) => {
     assert.strictEqual(typeof fingerprint, 'string');
   });
 
-  await t.test('AGENT_TARGETS contains unified definitions for Antigravity and OpenCode', () => {
+  await t.test('AGENT_TARGETS contains unified definitions for Antigravity, OpenCode, and CloudCLI', () => {
     const network = require('../lib/network');
     assert.strictEqual(Array.isArray(network.AGENT_TARGETS), true);
-    assert.strictEqual(network.AGENT_TARGETS.length, 2);
+    assert.strictEqual(network.AGENT_TARGETS.length, 3);
 
     const antigravity = network.AGENT_TARGETS.find(t => t.id === 'antigravity');
     assert.ok(antigravity);
@@ -77,6 +77,13 @@ test('Config Module - Path Resolutions and Permissions', async (t) => {
     assert.strictEqual(opencode.protocol, 'http');
     assert.strictEqual(opencode.defaultPort, 4096);
     assert.strictEqual(opencode.processPattern, 'opencode');
+
+    const cloudcli = network.AGENT_TARGETS.find(t => t.id === 'cloudcli');
+    assert.ok(cloudcli);
+    assert.strictEqual(cloudcli.protocol, 'http');
+    assert.strictEqual(cloudcli.defaultPort, 3001);
+    assert.strictEqual(cloudcli.processPattern, 'cloudcli|claudecode|claude');
+    assert.strictEqual(cloudcli.probePath, '/health');
   });
 
   await t.test('hub module generates valid HTML document with agent cards', () => {
@@ -84,11 +91,12 @@ test('Config Module - Path Resolutions and Permissions', async (t) => {
     const network = require('../lib/network');
     
     // 1. Test active targets rendering
-    const activeHtml = hub.getHubHtml(network.AGENT_TARGETS, [network.AGENT_TARGETS[0], network.AGENT_TARGETS[1]], 'test-token');
+    const activeHtml = hub.getHubHtml(network.AGENT_TARGETS, [network.AGENT_TARGETS[0], network.AGENT_TARGETS[1], network.AGENT_TARGETS[2]], 'test-token');
     assert.strictEqual(typeof activeHtml, 'string');
     assert.strictEqual(activeHtml.includes('Ultimatter Hub'), true);
     assert.strictEqual(activeHtml.includes('Google Antigravity'), true);
     assert.strictEqual(activeHtml.includes('OpenCode'), true);
+    assert.strictEqual(activeHtml.includes('Claude Code'), true);
     assert.strictEqual(activeHtml.includes('switchAgent'), true);
     assert.strictEqual(activeHtml.includes('pwaTipBanner'), true);
     assert.strictEqual(activeHtml.includes('ca-download-card'), true);

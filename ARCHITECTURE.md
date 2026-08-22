@@ -44,12 +44,13 @@ Ultimatter is designed around a single architectural principle: **The Zero-Touch
 └─────────────────────────────────────┼───────────────────────────────────────┘
                                        │
                ⚡ HTTP/1.1 + WebSocket ├───► 🛸 Google Antigravity (:43675)
-               (Loopback Connection)   └───► 👐 OpenCode (:4096)
+               (Loopback Connection)   ├───► 👐 OpenCode (:4096)
+                                       └───► 🧠 Claude Code (CloudCLI) (:3001)
 ```
 
 ### Core Design Principles
 * **100% Decoupled (Zero-Touch):** Ultimatter does not patch, modify, or inject plugins into IDE or agent files on disk. It runs strictly as an external daemon in user space.
-* **Update & Crash Proof:** Because Ultimatter communicates strictly over loopback TCP sockets (`127.0.0.1`), updating or restarting Antigravity/OpenCode never breaks the mobile bridge.
+* **Update & Crash Proof:** Because Ultimatter communicates strictly over loopback TCP sockets (`127.0.0.1`), updating or restarting Antigravity/OpenCode/CloudCLI never breaks the mobile bridge.
 * **Direct Real-Time Stream:** Bridges your mobile device directly to the active agent process on your PC—no cloud relays, no mockups, no third-party web clones.
 * **Pure Workbench View:** Delivers the full-screen IDE experience with zero DOM overlays or floating bubbles obstructing minimaps or terminal drawers.
 
@@ -67,7 +68,7 @@ Ultimatter is designed around a single architectural principle: **The Zero-Touch
 2. Gateway inspects Linux Kernel (/proc/net/tcp) in memory (0.0% CPU)
        │
        ▼
-3. Active Agents Auto-Discovered (Antigravity :43675 / OpenCode :4096)
+3. Active Agents Auto-Discovered (Antigravity :43675 / OpenCode :4096 / Claude Code :3001)
        │
        ▼
 4. Dual-Channel TLS Server binds Port 5864 (SNI: Local Wi-Fi & 5G Tailscale)
