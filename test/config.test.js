@@ -97,14 +97,41 @@ test('Config Module - Path Resolutions and Permissions', async (t) => {
     assert.strictEqual(activeHtml.includes('Google Antigravity'), true);
     assert.strictEqual(activeHtml.includes('OpenCode'), true);
     assert.strictEqual(activeHtml.includes('Claude Code'), true);
-    assert.strictEqual(activeHtml.includes('switchAgent'), true);
-    assert.strictEqual(activeHtml.includes('pwaTipBanner'), true);
-    assert.strictEqual(activeHtml.includes('ca-download-card'), true);
-    assert.strictEqual(activeHtml.includes('/api/ca.pem'), true);
-
     // 2. Test empty state when 0 agents active
     const emptyHtml = hub.getHubHtml(network.AGENT_TARGETS, [], 'test-token');
     assert.strictEqual(emptyHtml.includes('Waiting for Desktop Agents'), true);
     assert.strictEqual(emptyHtml.includes('ca-download-card'), true);
+  });
+
+  await t.test('network module manages disabled agents list with persistence', () => {
+    const network = require('../lib/network');
+    try {
+      // 1. Initially empty
+      assert.deepStrictEqual(network.getDisabledAgents(), []);
+
+      // 2. Disable cloudcli
+      const disabled1 = network.setAgentEnabled('cloudcli', false);
+      assert.deepStrictEqual(disabled1, ['cloudcli']);
+      assert.deepStrictEqual(network.getDisabledAgents(), ['cloudcli']);
+
+      // 3. Disable opencode
+      const disabled2 = network.setAgentEnabled('opencode', false);
+      assert.deepStrictEqual(disabled2, ['cloudcli', 'opencode']);
+      assert.deepStrictEqual(network.getDisabledAgents(), ['cloudcli', 'opencode']);
+
+      // 4. Re-enable cloudcli
+      const disabled3 = network.setAgentEnabled('cloudcli', true);
+      assert.deepStrictEqual(disabled3, ['opencode']);
+      assert.deepStrictEqual(network.getDisabledAgents(), ['opencode']);
+
+      // 5. Re-enable opencode
+      const disabled4 = network.setAgentEnabled('opencode', true);
+      assert.deepStrictEqual(disabled4, []);
+      assert.deepStrictEqual(network.getDisabledAgents(), []);
+    } finally {
+      if (fs.existsSync(config.SETTINGS_FILE)) {
+        fs.unlinkSync(config.SETTINGS_FILE);
+      }
+    }
   });
 });

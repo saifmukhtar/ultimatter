@@ -57,6 +57,15 @@ test('Proxy Module - Port Definitions and Target Updates', async (t) => {
     // 4. Default fallback: primary active target
     const reqDefault = { url: '/view', headers: { host: '127.0.0.1:5864' } };
     assert.strictEqual(proxy.resolveTargetForRequest(reqDefault).id, 'antigravity');
+
+    // 5. Disabled target filtering
+    proxy.updateTargets([
+      { id: 'antigravity', name: 'Google Antigravity', shortName: 'Antigravity', port: 43675, protocol: 'https', status: 'online', enabled: true },
+      { id: 'opencode', name: 'OpenCode', shortName: 'OpenCode', port: 4096, protocol: 'http', status: 'online', enabled: false }
+    ]);
+    const reqDisabled = { url: '/agent/opencode', headers: { host: '127.0.0.1:5864' } };
+    // Should fallback to enabled target instead of disabled one
+    assert.strictEqual(proxy.resolveTargetForRequest(reqDisabled).id, 'antigravity');
   });
 
   await t.test('checkAuth validates session cookies and query tokens correctly', () => {
