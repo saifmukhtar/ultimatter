@@ -104,12 +104,16 @@ fi
 echo "📦 Packaging AppImage into bin/Ultimatter-x86_64.AppImage..."
 mkdir -p "${ROOT_DIR}/bin"
 
+TARGET_APPIMAGE="${ROOT_DIR}/bin/Ultimatter-x86_64.AppImage"
+TMP_APPIMAGE="${ROOT_DIR}/bin/Ultimatter-x86_64.AppImage.tmp.$$"
+
 export ARCH=x86_64
 if [ -n "${APPIMAGE_EXTRACT_AND_RUN}" ] || ! command -v fusermount >/dev/null 2>&1; then
-  "${APPIMAGETOOL}" --appimage-extract-and-run "${APP_DIR}" "${ROOT_DIR}/bin/Ultimatter-x86_64.AppImage"
+  "${APPIMAGETOOL}" --appimage-extract-and-run "${APP_DIR}" "${TMP_APPIMAGE}"
 else
-  "${APPIMAGETOOL}" "${APP_DIR}" "${ROOT_DIR}/bin/Ultimatter-x86_64.AppImage" || "${APPIMAGETOOL}" --appimage-extract-and-run "${APP_DIR}" "${ROOT_DIR}/bin/Ultimatter-x86_64.AppImage"
+  "${APPIMAGETOOL}" "${APP_DIR}" "${TMP_APPIMAGE}" || "${APPIMAGETOOL}" --appimage-extract-and-run "${APP_DIR}" "${TMP_APPIMAGE}"
 fi
 
-chmod 755 "${ROOT_DIR}/bin/Ultimatter-x86_64.AppImage"
+chmod 755 "${TMP_APPIMAGE}"
+mv -f "${TMP_APPIMAGE}" "${TARGET_APPIMAGE}"
 echo "✅ AppImage created successfully: bin/Ultimatter-x86_64.AppImage"
