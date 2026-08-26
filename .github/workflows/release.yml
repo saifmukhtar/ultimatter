@@ -72,16 +72,23 @@ jobs:
           # 1. Linux AppImage (Primary Desktop)
           cp bin/Ultimatter-x86_64.AppImage dist/Ultimatter-x86_64.AppImage
 
+          # Rename binaries inside bin/ so they extract cleanly as "ultimatter" / "ultimatter.exe"
+          mv bin/ultimatter-linux-x64 bin/ultimatter
+          mv bin/ultimatter-windows-x64.exe bin/ultimatter.exe
+          mv bin/ultimatter-macos-arm64 bin/ultimatter
+
           # 2. Linux Raw Binary Archive (Server / Headless)
-          tar -czf dist/ultimatter-linux-x64.tar.gz -C bin ultimatter-linux-x64
+          tar -czf dist/ultimatter-linux-x64.tar.gz -C bin ultimatter
 
           # 3. Windows Executable & Zip Archive
-          cp bin/ultimatter-windows-x64.exe dist/ultimatter-windows-x64.exe
-          zip -j dist/ultimatter-windows-x64.zip bin/ultimatter-windows-x64.exe
+          # We also upload the raw .exe with the long name for convenience
+          cp bin/ultimatter.exe dist/ultimatter-windows-x64.exe
+          (cd bin && zip ../dist/ultimatter-windows-x64.zip ultimatter.exe)
 
           # 4. macOS Application Bundle & CLI Archive
+          # Ultimatter.app is already cleanly named
           (cd bin && zip -r ../dist/Ultimatter-macos-arm64.zip Ultimatter.app)
-          tar -czf dist/ultimatter-macos-arm64.tar.gz -C bin ultimatter-macos-arm64
+          tar -czf dist/ultimatter-macos-arm64.tar.gz -C bin ultimatter
 
           echo "=== Generated Release Artifacts in dist/ ==="
           ls -lh dist/

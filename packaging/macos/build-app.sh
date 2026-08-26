@@ -22,7 +22,7 @@ chmod 755 "${APP_BUNDLE}/Contents/MacOS/ultimatter" 2>/dev/null || true
 
 # 3. Compile standalone Node.js Gateway Backend inside macOS bundle
 echo "📦 Packaging standalone gateway backend into macOS bundle..."
-npx @yao-pkg/pkg "${ROOT_DIR}/index.js" --output "${APP_BUNDLE}/Contents/MacOS/ultimatter-backend" --targets node22-macos-arm64
+npx @yao-pkg/pkg "${ROOT_DIR}/bin/cli.js" --output "${APP_BUNDLE}/Contents/MacOS/ultimatter-backend" --targets node22-macos-arm64
 chmod 755 "${APP_BUNDLE}/Contents/MacOS/ultimatter-backend" 2>/dev/null || true
 
 # 4. Copy Apple ICNS and PNG Icons
