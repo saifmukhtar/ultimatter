@@ -56,6 +56,7 @@ test('SDK Module - Programmatic Library API', async (t) => {
       appName: 'Unit Test App',
       icon: '🧪',
       enableControlServer: false,
+      enableHub: false,
       enableTailscale: false,
       printQr: false
     });
@@ -89,6 +90,7 @@ test('SDK Module - Programmatic Library API', async (t) => {
       dashboardPort: testDashboardPort,
       appName: 'URL App',
       enableControlServer: false,
+      enableHub: false,
       enableTailscale: false,
       printQr: false
     });
