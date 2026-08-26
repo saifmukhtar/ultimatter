@@ -41,3 +41,5 @@ tmp-repo/
 # Rust Build Artifacts
 target/
 desktop/target/
+nohup.out
+test_regex.js

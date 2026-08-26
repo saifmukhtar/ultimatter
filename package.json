@@ -27,14 +27,15 @@
     "test": "NODE_ENV=test node --test test/*.test.js"
   },
   "devDependencies": {
-    "resedit": "^0.9.7"
+    "resedit": "^1.7.2"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "http-proxy": "^1.18.1",
-    "qrcode": "^1.5.4"
+    "qrcode": "^1.5.4",
+    "systeminformation": "^5.33.1"
   },
   "pkg": {
     "assets": [

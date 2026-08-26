@@ -134,4 +134,24 @@ test('Config Module - Path Resolutions and Permissions', async (t) => {
       }
     }
   });
+
+  await t.test('network module manages allowTailscale remote access persistence', () => {
+    const network = require('../lib/network');
+    try {
+      // 1. Default is true
+      assert.strictEqual(network.getAllowTailscale(), true);
+
+      // 2. Set to false and verify persistence
+      network.setAllowTailscale(false);
+      assert.strictEqual(network.getAllowTailscale(), false);
+
+      // 3. Set back to true and verify persistence
+      network.setAllowTailscale(true);
+      assert.strictEqual(network.getAllowTailscale(), true);
+    } finally {
+      if (fs.existsSync(config.SETTINGS_FILE)) {
+        fs.unlinkSync(config.SETTINGS_FILE);
+      }
+    }
+  });
 });
