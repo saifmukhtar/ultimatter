@@ -30,7 +30,7 @@ Options:
     }
 
     if args.iter().any(|a| a == "--version" || a == "-v") {
-        println!("v1.0.0");
+        println!("v1.1.2");
         return Ok(());
     }
 
