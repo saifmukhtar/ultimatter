@@ -1,6 +1,6 @@
 {
   "name": "ultimatter",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Universal Mobile Gateway & Reverse Proxy SDK for Local Dev & AI Coding Agents",
   "main": "index.js",
   "bin": {
