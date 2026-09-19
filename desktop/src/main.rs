@@ -30,7 +30,7 @@ Options:
     }
 
     if args.iter().any(|a| a == "--version" || a == "-v") {
-        println!("v1.1.2");
+        println!("v{}", env!("CARGO_PKG_VERSION"));
         return Ok(());
     }
 
