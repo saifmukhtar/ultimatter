@@ -96,7 +96,7 @@ test('Config Module - Path Resolutions and Permissions', async (t) => {
     assert.strictEqual(activeHtml.includes('Ultimatter Hub'), true);
     assert.strictEqual(activeHtml.includes('Google Antigravity'), true);
     assert.strictEqual(activeHtml.includes('OpenCode'), true);
-    assert.strictEqual(activeHtml.includes('Claude Code'), true);
+    assert.strictEqual(activeHtml.includes('CloudCLI'), true);
     // 2. Test empty state when 0 agents active
     const emptyHtml = hub.getHubHtml(network.AGENT_TARGETS, [], 'test-token');
     assert.strictEqual(emptyHtml.includes('Waiting for Desktop Agents'), true);

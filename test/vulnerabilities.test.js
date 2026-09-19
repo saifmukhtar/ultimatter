@@ -38,8 +38,9 @@ test('Security Vulnerability Fixes', async (t) => {
 
   await t.test('Auth token setter works correctly', () => {
     const original = auth.SECURE_TOKEN;
-    auth.SECURE_TOKEN = 'test-token-override';
-    assert.strictEqual(auth.SECURE_TOKEN, 'test-token-override');
+    const validHex = '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef';
+    auth.SECURE_TOKEN = validHex;
+    assert.strictEqual(auth.SECURE_TOKEN, validHex);
     auth.SECURE_TOKEN = original; // restore
   });
 });
