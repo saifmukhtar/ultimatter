@@ -104,11 +104,7 @@ const startCli = async () => {
 
     // 1. Single-Instance Re-Opener
     if (isRunning) {
-      console.log(`\n🚀 Ultimatter is already active in background.`);
-      if (!isHeadless) {
-        console.log(`Re-opening Control Panel in desktop window...\n`);
-        network.openBrowser(dashboardUrl);
-      }
+      console.log(`\\n🚀 Ultimatter is already active in background.`);
       return;
     }
 
@@ -138,11 +134,9 @@ const startCli = async () => {
       proxy.updateTargets(targets);
     });
 
-    // 6. Launch Standalone GUI Window on Desktop (unless running --headless)
-    if (!isHeadless) {
-      network.openBrowser(dashboardUrl);
-    } else {
-      console.log(`⚙️  Headless Mode: Desktop GUI window will not open automatically.`);
+    // 6. Ready!
+    if (isHeadless) {
+      console.log(`⚙️  Headless Mode Active.`);
     }
   } catch (err) {
     console.error("❌ Ultimatter Startup Failed:", err.message);
