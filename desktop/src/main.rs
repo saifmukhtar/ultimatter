@@ -10,6 +10,19 @@ use tao::{
 };
 use wry::WebViewBuilder;
 
+fn handle_external_url(url: String) -> bool {
+    if url.starts_with("http://127.0.0.1") || url.starts_with("http://localhost") || url.starts_with("ws://") || url.starts_with("devtools://") {
+        return true;
+    }
+    #[cfg(target_os = "windows")]
+    let _ = std::process::Command::new("cmd").args(["/C", "start", "", &url]).spawn();
+    #[cfg(target_os = "macos")]
+    let _ = std::process::Command::new("open").arg(&url).spawn();
+    #[cfg(target_os = "linux")]
+    let _ = std::process::Command::new("xdg-open").arg(&url).spawn();
+    false
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<String> = std::env::args().collect();
 
@@ -123,6 +136,8 @@ Options:
         WebViewBuilder::new()
             .with_url("http://127.0.0.1:5865/dashboard")
             .with_ipc_handler(ipc_handler)
+            .with_new_window_req_handler(handle_external_url)
+            .with_navigation_handler(handle_external_url)
             .build_gtk(vbox)?
     };
 
@@ -130,6 +145,8 @@ Options:
     let _webview = WebViewBuilder::new()
         .with_url("http://127.0.0.1:5865/dashboard")
         .with_ipc_handler(ipc_handler)
+        .with_new_window_req_handler(handle_external_url)
+        .with_navigation_handler(handle_external_url)
         .build(&window)?;
 
     // 6. Run Event Loop
