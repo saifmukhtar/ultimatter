@@ -12,15 +12,25 @@ impl ProcessSupervisor {
 
     /// Spawns the Ultimatter gateway daemon if it's not already running.
     pub fn ensure_gateway_running(&mut self) {
-        // Probe to check if gateway is already active on port 5865
-        let test_client = reqwest::blocking::Client::builder()
-            .timeout(std::time::Duration::from_millis(400))
+        let client = reqwest::blocking::Client::builder()
+            .timeout(std::time::Duration::from_millis(500))
             .build()
             .unwrap_or_default();
-        
-        if test_client.get("http://127.0.0.1:5865/api/dashboard/status").send().is_ok() {
-            // Already running
-            return;
+
+        // Double-probe liveness check: if the first probe succeeds we cannot
+        // trust it yet — the port may belong to a dying backend whose AppImage
+        // filesystem is already being unmounted. We wait 2 s and probe again.
+        // Only skip spawning if BOTH probes return a healthy response, proving
+        // the existing backend is truly stable.
+        let probe_url = "http://127.0.0.1:5865/api/dashboard/status";
+        let first_ok = client.get(probe_url).send().is_ok();
+        if first_ok {
+            std::thread::sleep(std::time::Duration::from_millis(2000));
+            if client.get(probe_url).send().is_ok() {
+                // Confirmed stable — nothing to do.
+                return;
+            }
+            // First probe lied (stale backend died). Fall through and spawn fresh.
         }
 
         // 1. First probe for standalone sibling backend binary (packaged inside AppImage / macOS bundle / Windows)
