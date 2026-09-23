@@ -78,7 +78,7 @@ test('Proxy Module - Port Definitions and Target Updates', async (t) => {
     assert.strictEqual(res1.auth, true);
 
     // Valid query token
-    const reqWithToken = { url: `/?token=${auth.SECURE_TOKEN}`, headers: { host: '127.0.0.1:5864' } };
+    const reqWithToken = { url: `/?token=${auth.generateExchangeToken()}`, headers: { host: '127.0.0.1:5864' } };
     const res2 = proxy.checkAuth(reqWithToken);
     assert.strictEqual(res2.auth, true);
     assert.strictEqual(res2.hasToken, true);
