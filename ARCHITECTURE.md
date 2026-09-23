@@ -1,7 +1,7 @@
 # 🏛️ Ultimatter Architecture Blueprint
 
 > **High-Level System Engineering, Topology, and Execution Flow Specification**  
-> Ultimatter is a decoupled, zero-touch mobile gateway for **Google Antigravity** and **OpenCode**.
+> Ultimatter is a universal, decoupled mobile gateway SDK for any local web service or AI coding agent (Google Antigravity, OpenCode, CloudCLI).
 
 ---
 
