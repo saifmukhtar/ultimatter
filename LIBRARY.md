@@ -1,38 +1,6 @@
-# 🚀 Ultimatter SDK & Programmatic Library
+# 📦 Ultimatter Library Reference
 
-> **Turn any local dev server, web app, or AI interface into a secure, mobile-paired application with 1 line of code.**
-
-The **Ultimatter SDK** is a zero-configuration, security-hardened reverse proxy engine designed to bridge desktop/local web servers directly to mobile devices (iOS & Android) over Local Wi-Fi and Tailscale MagicDNS.
-
----
-
-## ⚡ What Problem Does It Solve?
-
-When developers build local web applications, AI agent dashboards, or dev servers (Next.js, Vite, Express, Fastify, Ollama, Jupyter, etc.) and try to use them on their phones:
-
-1. ❌ **Broken HTTPS & WebSockets on Mobile:** Mobile Safari and Chrome aggressively block untrusted self-signed certificates and unencrypted HTTP/WebSocket connections.
-2. ❌ **Tedious Authentication Boilerplate:** Writing pairing QR codes, cryptographic tokens, HMAC cookies, and rate limiters takes days.
-3. ❌ **Complex Networking Setup:** Manually looking up local LAN IPs, configuring mDNS, and setting up split-DNS or Tailscale tunnels is cumbersome.
-4. ❌ **Sub-par Mobile Experience:** Local web apps lack proper viewport scaling, standalone PWA manifests, and connection reconnect shims.
-
-**Ultimatter SDK solves all of this automatically in a single function call.**
-
----
-
-## 📦 What You Get Out-of-the-Box
-
-| Feature | Description |
-| :--- | :--- |
-| 🔒 **Automatic Local & Remote TLS** | Generates trusted local CA certificates (`mkcert`) with pure OpenSSL fallback, plus automated Tailscale Let's Encrypt certificates. |
-| ⚡ **HTTP/2 Multiplexing & WSS** | High-throughput, low-latency streaming for AI tokens, terminal buffers, and real-time WebSockets over a single connection. |
-| 🛡️ **Zero-Trust Security** | Cryptographic 256-bit token pairing, HMAC-signed session cookies (30-day sliding window), and automatic 15-minute IP rate-limiting bans. |
-| 📱 **Auto-Adaptive Mobile Routing** | **1 App:** Lands directly in your app with zero clicks. <br>**2+ Apps:** Displays the interactive **Ultimatter Mobile Hub** launcher. |
-| 📲 **PWA & Mobile Optimization** | Automatically injects Web App Manifests, iOS standalone meta tags, and high-DPI app icons into proxied HTML responses. |
-| 📷 **Instant QR Code Pairing** | Generates ASCII QR codes in the terminal and scalable vector SVGs (`qrSvg`) for embedding in web interfaces. |
-
----
-
-## 🛠️ Installation
+Ultimatter is a Node.js library you can install and use in your own projects to add secure mobile gateway access to any local web service.
 
 ```bash
 npm install ultimatter
@@ -40,140 +8,230 @@ npm install ultimatter
 
 ---
 
-## 🚀 Quick Start (3 Lines of Code)
-
-### 1. Wrapping an Existing Port or Dev Server
+## Quick Start
 
 ```javascript
-import { createMobileGateway } from 'ultimatter';
-
-// Wrap your existing local server running on port 3000
-const gateway = await createMobileGateway({
-  target: 3000,
-  appName: 'My Web App',
-  icon: '⚡',
-  printQr: true // Prints scannable pairing QR code in terminal
-});
-
-console.log(`📱 Mobile Wi-Fi URL: ${gateway.mobileUrl}`);
-```
-
----
-
-### 2. Full Express / Fastify Integration
-
-```javascript
-import express from 'express';
-import { createMobileGateway } from 'ultimatter';
-
-const app = express();
-
-app.get('/', (req, res) => {
-  res.send('<h1>Hello from my Mobile-Ready App!</h1>');
-});
-
-const server = app.listen(3000, async () => {
-  // Turn Express server into a secure mobile gateway
-  const gateway = await createMobileGateway({
-    target: 3000,
-    appName: 'Express Backend',
-    icon: '🚀',
-    printQr: true
-  });
-
-  // Graceful teardown
-  process.on('SIGINT', async () => {
-    await gateway.close();
-    server.close();
-    process.exit(0);
-  });
-});
-```
-
----
-
-### 3. Multi-Service Mobile Hub Launcher
-
-If your project has multiple local services (e.g. Frontend + Backend API + Docs), Ultimatter will automatically serve the **Mobile Hub launchpad** so you can switch between them on your phone:
-
-```javascript
-import { createMobileGateway } from 'ultimatter';
+const { createMobileGateway } = require('ultimatter');
 
 const gateway = await createMobileGateway({
-  targets: [
-    { id: 'web', name: 'Web Dashboard', port: 3000, icon: '🌐' },
-    { id: 'api', name: 'GraphQL API', port: 8080, icon: '⚡' },
-    { id: 'docs', name: 'API Documentation', port: 8000, icon: '📚' }
-  ],
-  printQr: true
+  target:  3000,
+  name:    'My App',
+  printQr: true,
 });
+
+console.log(gateway.mobileUrl);    // https://192.168.x.x:5864/?token=...
+console.log(gateway.tailscaleUrl); // https://hostname.ts.net:5864/?token=... (if Tailscale active)
 ```
 
 ---
 
-## ⚙️ Programmatic API Reference
+## `createMobileGateway(options)` → `Promise<GatewayInstance>`
 
-### `createMobileGateway(options)`
+The main SDK entry point. Creates a TLS server, starts the HTTP/2 proxy, handles authentication, and returns a live gateway instance.
 
-#### Options:
+### Options
 
 | Option | Type | Default | Description |
-| :--- | :--- | :--- | :--- |
-| `target` | `number \| string` | `null` | Single target port (e.g. `3000`) or URL (`"http://127.0.0.1:3000"`). |
-| `targets` | `Array<object>` | `null` | Array of target definitions: `[{ id, name, port, protocol, icon }]`. |
-| `port` / `proxyPort` | `number` | `5864` | External HTTPS / HTTP/2 gateway port. |
-| `dashboardPort` | `number` | `5865` | Local desktop control panel port (if enabled). |
-| `appName` / `name` | `string` | `'Ultimatter App'` | Name displayed on mobile pairing and PWA header. |
-| `icon` | `string` | `'⚡'` | Emoji or icon identifier. |
-| `enableTailscale` | `boolean` | `true` | Auto-detect and configure Tailscale MagicDNS TLS if available. |
-| `enableControlServer`| `boolean` | `false` | Start the local desktop GUI HTTP control panel on port 5865. |
-| `enableHub` | `'auto' \| boolean` | `'auto'` | `'auto'` bypasses hub for 1 app and shows hub for 2+ apps. |
-| `token` | `string` | *Crypto Random* | Custom pairing token (defaults to auto-generated 256-bit token). |
-| `printQr` | `boolean` | `false` | Print ASCII QR code and connection links to `stdout`. |
+|--------|------|---------|-------------|
+| `target` | `number \| string` | — | Port number or URL to proxy. E.g. `3000`, `'http://localhost:8080'`, `'https://127.0.0.1:443'` |
+| `targets` | `TargetDef[]` | — | Multiple targets (see [Multi-target](#multi-target) below). Use instead of `target` for more than one service |
+| `name` | `string` | `'Ultimatter App'` | Display name shown on the Mobile Hub agent card |
+| `icon` | `string` | `'⚡'` | Emoji icon shown on the Mobile Hub agent card |
+| `port` | `number` | `5864` | External HTTPS proxy port (alias: `proxyPort`) |
+| `printQr` | `boolean` | `false` | Print an ASCII QR code to stdout on startup |
+| `token` | `string` | auto-generated | Custom 64-char hex auth token. If omitted, a cryptographically random one is generated and persisted to `~/.config/ultimatter/.secret.json` |
+| `enableTailscale` | `boolean` | `true` | Auto-detect Tailscale and generate a `*.ts.net` Let's Encrypt cert for 5G access |
+| `enableHub` | `boolean \| 'auto'` | `'auto'` | Show the Mobile Hub at `/`. `'auto'` shows it when no `target` is set (agent auto-discovery mode) |
+| `enableControlServer` | `boolean` | `false` | Start the desktop control panel API on `:5865`. Only needed when running the full desktop app |
+| `dashboardPort` | `number` | `5865` | Port for the internal control panel API |
 
-#### Returns (`Promise<GatewayInstance>`):
+### Return value — `GatewayInstance`
 
 ```typescript
-interface GatewayInstance {
-  server: http2.Http2SecureServer; // Raw Node.js HTTP/2 secure server
-  close: () => Promise<void>;      // Closes gateway and destroys all active sockets
-  mobileUrl: string;               // Wi-Fi HTTPS pairing URL with token
-  localIp: string;                 // Discovered local LAN IP
-  tailscaleUrl: string | null;     // Encrypted Tailscale MagicDNS URL (if available)
-  token: string;                   // Active 256-bit security token
-  qrSvg: string;                   // Raw scalable vector SVG QR code string
-  updateTargets: (targets: any) => void; // Dynamically update targets at runtime
+{
+  server:        Http2SecureServer,  // The raw Node.js HTTPS server
+  mobileUrl:     string,             // Full pairing URL with one-time token (for local Wi-Fi)
+  tailscaleUrl:  string | null,      // Full pairing URL for Tailscale (null if not available)
+  localIp:       string,             // Detected local IP address (e.g. "192.168.1.10")
+  token:         string,             // The active 256-bit auth token
+  qrSvg:         string,             // SVG string of the QR code (for embedding in UIs)
+  updateTargets: (targets) => void,  // Live-update the proxy target list without restart
+  close:         () => Promise<void> // Gracefully shut down the gateway
 }
 ```
 
 ---
 
-## 💻 Zero-Install CLI Usage
+## Examples
 
-You can also wrap any running server or port instantly via the CLI without writing code:
+### Wrap a single local port
 
-```bash
-# Wrap a local web app running on port 3000
-npx ultimatter --port 3000
+```javascript
+const { createMobileGateway } = require('ultimatter');
 
-# Wrap custom service with a custom name
-npx ultimatter -p 8080 -n "My Fastify API"
+await createMobileGateway({
+  target:  3000,
+  name:    'My Dev Server',
+  icon:    '🌐',
+  printQr: true,
+});
+```
 
-# Run default multi-agent AI discovery mode (Antigravity, OpenCode, Claude Code)
-npx ultimatter
+### Wrap an HTTPS local service
+
+```javascript
+await createMobileGateway({
+  target:  'https://localhost:8443',
+  name:    'Local HTTPS API',
+  printQr: true,
+});
+```
+
+### Multi-target
+
+Expose multiple services on one gateway. Each appears as a separate card on the Mobile Hub.
+
+```javascript
+await createMobileGateway({
+  targets: [
+    { id: 'frontend', name: 'React App',  icon: '⚛️', port: 3000 },
+    { id: 'api',      name: 'API Server', icon: '🔌', port: 8080 },
+    { id: 'docs',     name: 'Storybook',  icon: '📖', port: 6006 },
+  ],
+  printQr: true,
+});
+```
+
+### Custom token
+
+Fix the token so QR codes stay valid across restarts.
+
+```javascript
+await createMobileGateway({
+  target: 3000,
+  token:  process.env.ULTIMATTER_TOKEN, // your own 64-char hex string
+});
+```
+
+### Live target updates
+
+Update the proxy targets at runtime — useful when services start and stop dynamically.
+
+```javascript
+const gateway = await createMobileGateway({ target: 3000 });
+
+// Later — swap to a different port without restarting
+gateway.updateTargets([
+  { id: 'app', name: 'New Target', port: 4000, protocol: 'http' }
+]);
+```
+
+### Headless server / Docker
+
+```javascript
+await createMobileGateway({
+  target:  3000,
+  name:    'Production Preview',
+  printQr: true,  // QR code appears in container logs
+});
+```
+
+### Embed QR in your own UI
+
+```javascript
+const gateway = await createMobileGateway({ target: 3000 });
+
+// gateway.qrSvg is a ready-to-embed SVG string
+res.send(`<img src="data:image/svg+xml;base64,${Buffer.from(gateway.qrSvg).toString('base64')}">`);
 ```
 
 ---
 
-## 🎯 Common Use Cases
+## Multi-target `TargetDef` Schema
 
-* **Local AI Agent UIs:** Expose autonomous agent terminals (OpenCode, Claude Code, Antigravity, Aider) to mobile for on-the-go monitoring.
-* **Local LLM Interfaces:** Run Ollama, LM Studio, or vLLM web UIs and chat with your local models from your phone securely.
-* **Frontend Mobile Testing:** Test responsive layouts, camera APIs, and touch interactions on real mobile devices with real HTTPS certificates.
-* **Internal Tools & Dashboards:** Safely view developer tools, Jupyter notebooks, or database admin viewers on mobile without public exposure.
+```typescript
+{
+  id:           string,             // Unique identifier
+  name:         string,             // Display name on the Mobile Hub
+  shortName?:   string,             // Short name (used in breadcrumbs)
+  icon?:        string,             // Emoji icon
+  port:         number,             // Local port number
+  protocol?:    'http' | 'https',   // Default: 'http'
+  description?: string,             // Subtitle on the Mobile Hub card
+  enabled?:     boolean,            // Default: true
+}
+```
 
 ---
 
-## 📄 License
+## Low-Level API
 
-MIT © [Saif Mukhtar](https://github.com/saifmukhtar)
+These are the internal modules exposed by the library for advanced use cases.
+
+```javascript
+const {
+  createMobileGateway, // ← primary SDK — use this for most cases
+  startProxy,          // start the HTTP/2 proxy engine directly
+  updateTargets,       // update proxy targets on a running server
+  network,             // network utilities
+  auth,                // auth engine
+  security,            // rate limiter / IP banning
+} = require('ultimatter');
+```
+
+### `network`
+
+| Export | Description |
+|--------|-------------|
+| `network.getLocalIp()` | Returns the machine's primary LAN IP address |
+| `network.getTailscaleDns()` | Returns the `*.ts.net` hostname if Tailscale is active, else `null` |
+| `network.generateSSLCertificate(ip)` | Generates a local mkcert TLS cert for the given IP |
+| `network.generateTailscaleCert(dns)` | Runs `tailscale cert` for the given hostname |
+| `network.AGENT_TARGETS` | Array of built-in agent discovery definitions |
+
+### `auth`
+
+| Export | Description |
+|--------|-------------|
+| `auth.SECURE_TOKEN` | The active 256-bit hex token (readable and settable) |
+| `auth.generateExchangeToken()` | Generates a one-time exchange token for embedding in QR URLs |
+| `auth.validateToken(token)` | Returns `true` if the token matches, using constant-time comparison |
+| `auth.validateCookie(cookieHeader)` | Validates an incoming HMAC-SHA256 `mobile_auth` cookie |
+
+### `security`
+
+| Export | Description |
+|--------|-------------|
+| `security.checkRateLimit(ip)` | Returns `{ allowed: boolean, bannedUntil?: number }` |
+| `security.recordFailedAttempt(ip)` | Records a failed auth attempt for the given IP |
+| `security.resetRateLimit(ip)` | Clears the rate limit record for an IP |
+
+---
+
+## Ports Used
+
+| Port | Direction | Purpose |
+|------|-----------|---------|
+| `:5864` | Inbound (phone → desktop) | HTTPS/HTTP2 proxy + Mobile Hub + auth handshake |
+| `:5865` | Loopback only | Desktop control panel API (only active in standalone app mode) |
+
+---
+
+## File Storage
+
+Ultimatter stores its generated credentials and certificates in `~/.config/ultimatter/`:
+
+| File | Content | Permissions |
+|------|---------|-------------|
+| `.secret.json` | Auth token + HMAC secret | `0o600` |
+| `cert.pem` | Local TLS certificate (mkcert) | `0o644` |
+| `key.pem` | Local TLS private key | `0o600` |
+| `settings.json` | Persisted settings (disabled agents, etc.) | `0o644` |
+
+---
+
+## Source
+
+- Entry point: [`index.js`](index.js)
+- SDK implementation: [`lib/gateway.js`](lib/gateway.js)
+- Proxy engine: [`lib/proxy.js`](lib/proxy.js)

@@ -103,7 +103,7 @@ await createMobileGateway({
 
 Works with any local web service — a dev server, an internal dashboard, a home automation tool. The Mobile Hub, QR pairing, PWA install, and 256-bit auth all come included.
 
-See [lib/gateway.js](lib/gateway.js) for the full API and all available options.
+See **[LIBRARY.md](LIBRARY.md)** for the full API reference, all options, and more examples.
 
 ---
 
@@ -131,7 +131,7 @@ Download for your platform from **[GitHub Releases](https://github.com/saifmukht
 ## Architecture & Docs
 
 - 📐 **[ARCHITECTURE.md](ARCHITECTURE.md)** — full system topology, execution flow, security model, and component breakdown
-- 📦 **[lib/gateway.js](lib/gateway.js)** — `createMobileGateway()` SDK entry point and all options
+- 📦 **[LIBRARY.md](LIBRARY.md)** — full SDK reference, all options, low-level API, and examples
 
 ---
 
