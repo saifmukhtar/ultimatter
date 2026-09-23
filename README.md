@@ -6,21 +6,80 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=flat-square)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Linux%20%C2%B7%20macOS%20%C2%B7%20Windows-lightgrey?style=flat-square)]()
 
-<br>
+---
 
-<p align="center">
-  <img src="assets/main_menu.png" width="280" alt="Ultimatter Desktop Control Panel" />
-  &nbsp;&nbsp;
-  <img src="assets/mobile_hub.png" width="140" alt="Ultimatter Mobile Hub" />
-</p>
+## What is Ultimatter?
+
+Ultimatter is **two things in one**:
+
+**📦 An npm library** — install it in any Node.js project and wrap any local port with secure mobile HTTPS access, QR pairing, and a live Mobile Hub in 3 lines of code.
+
+**🖥️ A standalone desktop app** — a pre-built native GUI for Linux, macOS, and Windows. It auto-discovers your running AI coding agents (Google Antigravity, OpenCode, CloudCLI), generates a pairing QR code, and gives you full mobile browser + PWA access with zero configuration.
+
+It works without modifying your agents, without cloud accounts, and without any configuration files. Everything runs locally, peer-to-peer.
 
 ---
 
-## Two things in one
+## Desktop Control Panel
 
-**📦 A Node.js SDK** — `npm install ultimatter` to wrap any local port with secure mobile HTTPS access in 3 lines of code.
+<p align="center">
+  <img src="assets/main_menu.png" width="300" alt="Ultimatter Desktop Control Panel" />
+</p>
 
-**🖥️ A standalone desktop app** — pre-built binary for Linux, macOS, and Windows. Point-and-click mobile access to your AI coding agents with auto-discovery, QR pairing, and a live Mobile Hub.
+The desktop control panel is a small, always-on-top native window that sits alongside your IDE. From here you can:
+
+- **Remote Access toggle** — instantly pause or resume all mobile access with one click
+- **QR Code** — your phone scans this once to pair. The QR refreshes if you reset the token or your network IP changes
+- **Local Wi-Fi / Tailscale MagicDNS tabs** — switch between LAN-only mode (fast, local) and 5G remote access via Tailscale (anywhere in the world, peer-to-peer WireGuard)
+- **Direct IP / .local Domain sub-tabs** — choose between raw IP (`https://192.168.x.x:5864`) or the mDNS `.local` hostname
+- **Copy Link** — copy the connection URL directly to your clipboard
+- **Reset Token** — invalidates all existing sessions and generates a fresh 256-bit auth token
+- **Agents** — open the agent manager (see below)
+
+---
+
+## AI Agent Manager
+
+<p align="center">
+  <img src="assets/agents.png" width="300" alt="AI Agent Manager modal" />
+</p>
+
+The agent manager shows every supported AI coding agent and whether it is currently active on your machine. Ultimatter discovers agent processes automatically using in-memory OS-level port inspection — no plugins, no config files, no background CPU usage.
+
+| Agent | Status | Details |
+|-------|--------|---------|
+| 🛸 **Google Antigravity** | Online — detected on `:33353` | Full IDE, reasoning streams, subagents, MCP tools |
+| 👐 **OpenCode** | Offline | Start with `opencode web`, auto-detected on `:4096` |
+| 🧠 **CloudCLI** (Anthropic Claude) | Offline | Auto-detected on `:3001` |
+
+You can enable or disable individual agents directly from this panel. Disabled agents are hidden from the Mobile Hub on your phone.
+
+---
+
+## Mobile Hub
+
+<p align="center">
+  <img src="assets/mobile_hub.png" width="220" alt="Ultimatter Mobile Hub on Android" />
+</p>
+
+After scanning the QR code, your phone lands on the **Ultimatter Mobile Hub** — a clean, card-based dashboard that shows:
+
+- **System Vitals card** — live CPU % and RAM usage of your desktop machine, updated in real time
+- **Agent cards** — one card per active agent with an **Open →** button that launches the full agent IDE in mobile-optimized full-screen view
+- **Root CA certificate card** — one-tap download of `ultimatter.pem` (or `.crt`) to install as a trusted certificate on your phone. This is required once for zero-warning HTTPS on local Wi-Fi
+- **Install as Mobile App prompt** — tap Share → Add to Home Screen (iOS) or Install App (Android) to add Ultimatter as a full-screen PWA with no browser chrome
+
+---
+
+## Tailscale MagicDNS (5G Remote Access)
+
+<p align="center">
+  <img src="assets/tailscale.png" width="300" alt="Tailscale MagicDNS tab in Ultimatter" />
+</p>
+
+Switch to the **Tailscale MagicDNS** tab to access your agents from anywhere — not just your local Wi-Fi. Ultimatter detects your Tailscale connection automatically and generates a QR code with a globally valid Let's Encrypt certificate for your Tailscale hostname.
+
+No cloud relay, no port forwarding, no VPN setup on your phone. It uses Tailscale's WireGuard peer-to-peer tunnel directly. If Tailscale is installed but not logged in, Ultimatter shows the exact command to run and flips to the QR view automatically once connected.
 
 ---
 
@@ -34,14 +93,17 @@ npm install ultimatter
 const { createMobileGateway } = require('ultimatter');
 
 await createMobileGateway({
-  target:  3000,         // local port or URL to proxy
-  name:    'My App',     // name shown on the Mobile Hub
-  printQr: true,         // print QR code to terminal
+  target:  3000,        // local port or URL to proxy
+  name:    'My App',    // display name on the Mobile Hub
+  icon:    '🛠️',       // emoji icon for the agent card
+  printQr: true,        // print QR code to terminal on startup
 });
-// → Starts HTTPS proxy on :5864, generates local TLS cert, shows QR code
+// → Generates local TLS cert, starts HTTPS proxy on :5864, prints QR code
 ```
 
-See the full **[SDK & Library Reference →](lib/)** for all options and the programmatic API.
+Works with any local web service — a dev server, an internal dashboard, a home automation tool. The Mobile Hub, QR pairing, PWA install, and 256-bit auth all come included.
+
+See [lib/gateway.js](lib/gateway.js) for the full API and all available options.
 
 ---
 
@@ -49,50 +111,27 @@ See the full **[SDK & Library Reference →](lib/)** for all options and the pro
 
 Download for your platform from **[GitHub Releases](https://github.com/saifmukhtar/ultimatter/releases)**:
 
-| Platform | Download |
-|----------|----------|
-| 🐧 Linux (Desktop GUI) | `Ultimatter-x86_64.AppImage` |
-| 🐧 Linux (Headless / Server) | `ultimatter-linux-x64 --headless` |
+| Platform | Binary |
+|----------|--------|
+| 🐧 Linux (Desktop) | `Ultimatter-x86_64.AppImage` |
+| 🐧 Linux (Headless / Server) | `ultimatter-linux-x64` |
 | 🍎 macOS | `Ultimatter.app` |
 | 🪟 Windows | `ultimatter-windows-x64.exe` |
 
-### How to connect your phone
+```bash
+# Headless mode — no GUI, runs as a background daemon
+./ultimatter-linux-x64 --headless
 
-1. Scan the QR code on the desktop control panel with your phone camera.
-2. Download and install the **Root CA certificate** (`ultimatter.pem`) shown on the Mobile Hub — one-time step for trusted HTTPS.
-3. Tap **Add to Home Screen** (iOS) or **Install App** (Android) to install as a full-screen PWA.
-4. Tap any agent card to enter the full-screen session.
-
----
-
-## Supported AI Agents
-
-Ultimatter auto-discovers running agent processes via in-memory OS port inspection — no plugins, no config.
-
-<p align="center">
-  <img src="assets/agents.png" width="280" alt="Agent Manager — Antigravity, OpenCode, CloudCLI" />
-</p>
-
-| Agent | Auto-discovered at |
-|-------|--------------------|
-| 🛸 **Google Antigravity** | `:33353` |
-| 👐 **OpenCode** | `:4096` |
-| 🧠 **CloudCLI** (Anthropic Claude) | `:3001` |
-
-<p align="center">
-  <img src="assets/antigravity.png" width="160" alt="Google Antigravity on mobile" />
-  &nbsp;&nbsp;
-  <img src="assets/tailscale.png" width="280" alt="Tailscale MagicDNS remote access" />
-</p>
-
-Remote access over 5G works out of the box via **Tailscale MagicDNS** — direct WireGuard peer-to-peer, no cloud relay.
+# Wrap a specific port via CLI
+./ultimatter-linux-x64 --port 8080 --name "My API"
+```
 
 ---
 
-## Docs
+## Architecture & Docs
 
-- 📐 **[ARCHITECTURE.md](ARCHITECTURE.md)** — system topology, execution flow, component breakdown
-- 📦 **[lib/](lib/)** — full SDK source and programmatic API reference
+- 📐 **[ARCHITECTURE.md](ARCHITECTURE.md)** — full system topology, execution flow, security model, and component breakdown
+- 📦 **[lib/gateway.js](lib/gateway.js)** — `createMobileGateway()` SDK entry point and all options
 
 ---
 
