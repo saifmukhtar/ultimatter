@@ -66,15 +66,23 @@ jobs:
       - name: Build Linux executables
         run: |
           npm run build:appimage
-          npm run build:linux
+          # Build the standalone backend
+          npx @yao-pkg/pkg bin/cli.js --output bin/ultimatter-backend-linux-x64 --targets node22-linux-x64
 
       - name: Stage release artifacts
         run: |
           mkdir -p dist
           cp bin/Ultimatter-x86_64.AppImage dist/Ultimatter-x86_64.AppImage
 
-          mv bin/ultimatter-linux-x64 bin/ultimatter
-          tar -czf dist/ultimatter-linux-x64.tar.gz -C bin ultimatter
+          # Create a portable folder containing BOTH the GUI and Backend
+          mkdir -p dist/portable-linux
+          # The AppImage script placed the Rust GUI at bin/ultimatter-linux-x64
+          cp bin/ultimatter-linux-x64 dist/portable-linux/ultimatter
+          cp bin/ultimatter-backend-linux-x64 dist/portable-linux/ultimatter-backend
+          chmod +x dist/portable-linux/ultimatter dist/portable-linux/ultimatter-backend
+          
+          # Tar them up into a portable bundle
+          tar -czf dist/Ultimatter-Linux-Portable-x64.tar.gz -C dist/portable-linux ultimatter ultimatter-backend
 
       - name: Upload Linux Artifacts
         uses: softprops/action-gh-release@v2
@@ -87,7 +95,7 @@ jobs:
           generate_release_notes: true
           files: |
             dist/Ultimatter-x86_64.AppImage
-            dist/ultimatter-linux-x64.tar.gz
+            dist/Ultimatter-Linux-Portable-x64.tar.gz
 
   build-windows:
     name: Build Windows
