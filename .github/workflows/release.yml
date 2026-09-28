@@ -147,9 +147,18 @@ jobs:
             dist/Ultimatter-Windows-x64.msi
 
   build-macos:
-    name: Build macOS
+    name: Build macOS (${{ matrix.arch_name }})
     needs: test
     runs-on: macos-latest
+    strategy:
+      matrix:
+        include:
+          - target: aarch64-apple-darwin
+            node_target: node22-macos-arm64
+            arch_name: arm64
+          - target: x86_64-apple-darwin
+            node_target: node22-macos-x64
+            arch_name: x64
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -161,21 +170,26 @@ jobs:
 
       - name: Setup Rust toolchain
         uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
 
       - name: Install dependencies
         run: npm ci || npm install
 
       - name: Build macOS app and CLI
+        env:
+          RUST_TARGET: ${{ matrix.target }}
+          NODE_TARGET: ${{ matrix.node_target }}
         run: |
-          npm run build:mac
-          npm run build:macos:app
+          npx @yao-pkg/pkg bin/cli.js --output bin/ultimatter-macos-${{ matrix.arch_name }} --targets ${{ matrix.node_target }}
+          bash packaging/macos/build-app.sh
 
       - name: Stage macOS release artifacts
         run: |
           mkdir -p dist
-          mv bin/ultimatter-macos-arm64 bin/ultimatter
-          (cd bin && zip -r ../dist/Ultimatter-macos-arm64.zip Ultimatter.app)
-          tar -czf dist/ultimatter-macos-arm64.tar.gz -C bin ultimatter
+          mv bin/ultimatter-macos-${{ matrix.arch_name }} bin/ultimatter
+          (cd bin && zip -r ../dist/Ultimatter-macos-${{ matrix.arch_name }}.zip Ultimatter.app)
+          tar -czf dist/ultimatter-macos-${{ matrix.arch_name }}.tar.gz -C bin ultimatter
 
       - name: Upload macOS Artifacts
         uses: softprops/action-gh-release@v2
@@ -187,5 +201,5 @@ jobs:
           prerelease: false
           generate_release_notes: true
           files: |
-            dist/Ultimatter-macos-arm64.zip
-            dist/ultimatter-macos-arm64.tar.gz
+            dist/Ultimatter-macos-${{ matrix.arch_name }}.zip
+            dist/ultimatter-macos-${{ matrix.arch_name }}.tar.gz

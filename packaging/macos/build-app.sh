@@ -4,7 +4,10 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 
-echo "🍏 Building Ultimatter.app for macOS natively..."
+RUST_TARGET="${RUST_TARGET:-aarch64-apple-darwin}"
+NODE_TARGET="${NODE_TARGET:-node22-macos-arm64}"
+
+echo "🍏 Building Ultimatter.app for macOS natively (Target: ${RUST_TARGET})..."
 
 APP_BUNDLE="${ROOT_DIR}/bin/Ultimatter.app"
 rm -rf "${APP_BUNDLE}"
@@ -15,14 +18,14 @@ mkdir -p "${APP_BUNDLE}/Contents/Resources"
 cp "${SCRIPT_DIR}/Info.plist" "${APP_BUNDLE}/Contents/Info.plist"
 
 # 2. Compile native Rust Wry/Tao desktop binary
-echo "🦀 Compiling native Rust Wry/Tao desktop binary..."
-cargo build --release --manifest-path "${ROOT_DIR}/desktop/Cargo.toml"
-cp "${ROOT_DIR}/desktop/target/release/ultimatter" "${APP_BUNDLE}/Contents/MacOS/ultimatter"
+echo "🦀 Compiling native Rust Wry/Tao desktop binary for ${RUST_TARGET}..."
+cargo build --release --target "${RUST_TARGET}" --manifest-path "${ROOT_DIR}/desktop/Cargo.toml"
+cp "${ROOT_DIR}/desktop/target/${RUST_TARGET}/release/ultimatter" "${APP_BUNDLE}/Contents/MacOS/ultimatter"
 chmod 755 "${APP_BUNDLE}/Contents/MacOS/ultimatter"
 
 # 3. Compile standalone Node.js Gateway Backend inside macOS bundle
-echo "📦 Packaging standalone gateway backend into macOS bundle..."
-npx @yao-pkg/pkg "${ROOT_DIR}/bin/cli.js" --output "${APP_BUNDLE}/Contents/MacOS/ultimatter-backend" --targets node22-macos-arm64
+echo "📦 Packaging standalone gateway backend into macOS bundle for ${NODE_TARGET}..."
+npx @yao-pkg/pkg "${ROOT_DIR}/bin/cli.js" --output "${APP_BUNDLE}/Contents/MacOS/ultimatter-backend" --targets "${NODE_TARGET}"
 chmod 755 "${APP_BUNDLE}/Contents/MacOS/ultimatter-backend"
 
 # 4. Copy Apple ICNS and PNG Icons
