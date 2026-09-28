@@ -5,6 +5,17 @@ All notable changes to Ultimatter will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.3] - 2026-09-28
+
+### Added
+* **Windows MSI Installer:** Completely overhauled Windows distribution to use `cargo-wix`, providing a native `.msi` installer for easier Microsoft Store publishing and clean local installations.
+* **macOS Universal Builds:** Added dual-architecture GitHub Action builds for macOS, producing separate `.zip` bundles for modern Apple Silicon (`arm64`) and older Intel (`x64`) machines.
+* **Portable Artifacts:** Restored standalone headless CLI binaries and portable ZIP distributions across all OS pipelines for advanced headless/Docker deployments.
+
+### Fixed
+* **Linux Release Pipeline:** Resolved a severe race condition in the Linux GitHub Actions workflow where the Node.js headless CLI and Rust Desktop GUI both attempted to write to `ultimatter-linux-x64`, causing the final portable tarball to be overwritten.
+* **Store Compliance:** Updated default privacy policy and app metadata to strictly comply with Microsoft Partner Center guidelines (clarified non-generative AI networking status).
+
 ## [1.1.2] - 2026-09-23
 
 ### Security (Major Audit & CVE Patches)
