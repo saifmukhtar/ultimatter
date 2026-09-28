@@ -3,6 +3,8 @@ name = "ultimatter"
 version = "1.1.2"
 description = "Ultimatter Universal AI Gateway"
 edition = "2021"
+authors = ["Saif Mukhtar"]
+license = "Apache-2.0"
 
 [dependencies]
 wry = "0.47"

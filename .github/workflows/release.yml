@@ -33,8 +33,8 @@ jobs:
       - name: Run test suite
         run: npm test
 
-  build-linux-windows:
-    name: Build Linux & Windows
+  build-linux:
+    name: Build Linux
     needs: test
     runs-on: ubuntu-latest
     steps:
@@ -63,11 +63,10 @@ jobs:
       - name: Install dependencies
         run: npm ci || npm install
 
-      - name: Build Linux and Windows executables
+      - name: Build Linux executables
         run: |
           npm run build:appimage
           npm run build:linux
-          npm run build:win
 
       - name: Stage release artifacts
         run: |
@@ -75,14 +74,9 @@ jobs:
           cp bin/Ultimatter-x86_64.AppImage dist/Ultimatter-x86_64.AppImage
 
           mv bin/ultimatter-linux-x64 bin/ultimatter
-          mv bin/ultimatter-windows-x64.exe bin/ultimatter.exe
-
           tar -czf dist/ultimatter-linux-x64.tar.gz -C bin ultimatter
 
-          cp bin/ultimatter.exe dist/ultimatter-windows-x64.exe
-          (cd bin && zip ../dist/ultimatter-windows-x64.zip ultimatter.exe)
-
-      - name: Upload Linux & Windows Artifacts
+      - name: Upload Linux Artifacts
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
         with:
@@ -93,9 +87,58 @@ jobs:
           generate_release_notes: true
           files: |
             dist/Ultimatter-x86_64.AppImage
-            dist/ultimatter-windows-x64.exe
-            dist/ultimatter-windows-x64.zip
             dist/ultimatter-linux-x64.tar.gz
+
+  build-windows:
+    name: Build Windows
+    needs: test
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install cargo-wix
+        run: cargo install cargo-wix
+
+      - name: Install dependencies
+        run: npm ci || npm install
+
+      - name: Build Node.js backend
+        run: |
+          npx @yao-pkg/pkg bin/cli.js --output desktop/ultimatter-backend.exe --targets node22-win-x64
+
+      - name: Build Rust GUI & MSI Installer
+        working-directory: desktop
+        run: |
+          cargo build --release
+          cargo wix --nocapture --no-build -v
+
+      - name: Stage release artifacts
+        run: |
+          mkdir -p dist
+          copy desktop\target\wix\*.msi dist\Ultimatter-Windows-x64.msi
+          copy desktop\target\release\ultimatter.exe dist\ultimatter-windows-x64.exe
+
+      - name: Upload Windows Artifacts
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+        with:
+          tag_name: ${{ github.event.inputs.version || github.ref_name }}
+          name: Ultimatter ${{ github.event.inputs.version || github.ref_name }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: |
+            dist/Ultimatter-Windows-x64.msi
+            dist/ultimatter-windows-x64.exe
 
   build-macos:
     name: Build macOS
