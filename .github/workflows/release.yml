@@ -125,11 +125,6 @@ jobs:
         run: |
           mkdir -p dist
           copy desktop\target\wix\*.msi dist\Ultimatter-Windows-x64.msi
-          
-          mkdir dist\portable
-          copy desktop\target\release\ultimatter.exe dist\portable\ultimatter.exe
-          copy desktop\ultimatter-backend.exe dist\portable\ultimatter-backend.exe
-          Compress-Archive -Path dist\portable\* -DestinationPath dist\Ultimatter-Windows-Portable.zip
 
       - name: Upload Windows Artifacts
         uses: softprops/action-gh-release@v2
@@ -142,7 +137,6 @@ jobs:
           generate_release_notes: true
           files: |
             dist/Ultimatter-Windows-x64.msi
-            dist/Ultimatter-Windows-Portable.zip
 
   build-macos:
     name: Build macOS
