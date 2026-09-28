@@ -130,8 +130,6 @@ jobs:
           copy desktop\target\release\ultimatter.exe dist\portable\ultimatter.exe
           copy desktop\ultimatter-backend.exe dist\portable\ultimatter-backend.exe
           Compress-Archive -Path dist\portable\* -DestinationPath dist\Ultimatter-Windows-Portable.zip
-          
-          copy desktop\ultimatter-backend.exe dist\ultimatter-cli-windows-x64.exe
 
       - name: Upload Windows Artifacts
         uses: softprops/action-gh-release@v2
@@ -145,7 +143,6 @@ jobs:
           files: |
             dist/Ultimatter-Windows-x64.msi
             dist/Ultimatter-Windows-Portable.zip
-            dist/ultimatter-cli-windows-x64.exe
 
   build-macos:
     name: Build macOS
