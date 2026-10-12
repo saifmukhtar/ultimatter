@@ -5,6 +5,15 @@ All notable changes to Ultimatter will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.5] - 2026-10-13
+
+### Added
+* **Self-Contained Linux AppImage:** Dynamically bundles the WebKit2GTK runtime (`libwebkit2gtk-4.1`, `libjavascriptcoregtk-4.1`, WPE backends, and WebKit helper processes) directly inside the AppImage. Strips unneeded debug symbols to achieve full multi-distro portability (e.g. Ubuntu 22.04 LTS) while maintaining an ultra-compact ~68 MB footprint.
+* **Packaging Verification:** Added strict post-copy validation checks in `build-appimage.sh` to ensure all critical WebKit libraries and sub-processes are present prior to packaging.
+
+### Fixed
+* **Cold-Start Startup Deadline:** Replaced loop-count probing in the desktop GUI with a strict 7-second wall-clock deadline (`Instant::now()`), completely eliminating `Connection refused` race conditions on cold boots while preventing prolonged startup freezes.
+
 ## [1.1.4] - 2026-10-13
 
 ### Added
