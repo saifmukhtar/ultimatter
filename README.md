@@ -109,14 +109,23 @@ See **[LIBRARY.md](LIBRARY.md)** for the full API reference, all options, and mo
 
 ## Standalone App
 
+### Windows (Microsoft Store)
+Ultimatter for Windows is officially available on the Microsoft Store:
+
+<a href="https://apps.microsoft.com/detail/9mvb535638qp?referrer=appbadge&mode=full" target="_blank" rel="noopener noreferrer">
+	<img src="https://get.microsoft.com/images/en-us%20dark.svg" width="200"/>
+</a>
+
+### Direct Downloads
 Download for your platform from **[GitHub Releases](https://github.com/saifmukhtar/ultimatter/releases)**:
 
-| Platform | Binary |
-|----------|--------|
-| 🐧 Linux (Desktop) | `Ultimatter-x86_64.AppImage` |
-| 🐧 Linux (Headless / Server) | `ultimatter-linux-x64` |
-| 🍎 macOS | `Ultimatter.app` |
-| 🪟 Windows | `ultimatter-windows-x64.exe` |
+| Platform | Binary | Description |
+|----------|--------|-------------|
+| 🪟 Windows | `Ultimatter-Windows-x64.msix` | Official containerized package |
+| 🐧 Linux (Desktop) | `Ultimatter-x86_64.AppImage` | Self-contained, single-file bundle (~68 MB with WebKit) |
+| 🐧 Linux (Headless / Server) | `Ultimatter-Linux-Portable-x64.tar.gz` | Standalone CLI binaries for servers & Docker |
+| 🍎 macOS (Apple Silicon) | `Ultimatter-macOS-arm64.zip` | Native app bundle for M1 / M2 / M3 / M4 |
+| 🍎 macOS (Intel) | `Ultimatter-macOS-x64.zip` | Native app bundle for Intel-based Macs |
 
 ```bash
 # Headless mode — no GUI, runs as a background daemon
