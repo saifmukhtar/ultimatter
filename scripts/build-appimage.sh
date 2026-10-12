@@ -57,6 +57,20 @@ for helper_dir in "/usr/lib/x86_64-linux-gnu/webkit2gtk-4.1" "/usr/libexec/webki
   fi
 done
 
+# Verify all mandatory WebKit components were found and copied
+if ! find "${APP_DIR}/usr/lib" -name "libwebkit2gtk-4.1.so*" -print -quit | grep -q .; then
+  echo "❌ Error: Required libwebkit2gtk-4.1.so* was not found or failed to copy into AppDir!"
+  exit 1
+fi
+if ! find "${APP_DIR}/usr/lib" -name "libjavascriptcoregtk-4.1.so*" -print -quit | grep -q .; then
+  echo "❌ Error: Required libjavascriptcoregtk-4.1.so* was not found or failed to copy into AppDir!"
+  exit 1
+fi
+if [ ! -f "${APP_DIR}/usr/libexec/webkit2gtk-4.1/WebKitWebProcess" ] || [ ! -f "${APP_DIR}/usr/libexec/webkit2gtk-4.1/WebKitNetworkProcess" ]; then
+  echo "❌ Error: Required WebKit helper processes (WebKitWebProcess/WebKitNetworkProcess) are missing from AppDir!"
+  exit 1
+fi
+
 # Strip unneeded debug symbols to minimize squashfs size
 echo "✂️  Stripping unneeded symbols from bundled libraries..."
 find "${APP_DIR}/usr/lib" -type f -name "*.so*" -exec strip --strip-unneeded {} + 2>/dev/null || true
