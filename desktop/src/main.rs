@@ -1,6 +1,6 @@
 mod supervisor;
 
-use std::time::Duration;
+use std::time::{Duration, Instant};
 use supervisor::ProcessSupervisor;
 use tao::{
     dpi::LogicalSize,
@@ -65,17 +65,24 @@ Options:
     // Ensure background gateway daemon is running
     supervisor.ensure_gateway_running();
 
-    // Wait briefly for port 5865 to be responsive if freshly spawned
+    // Wait for port 5865 to be responsive if freshly spawned (enforce strict 7-second deadline)
     let probe_client = reqwest::blocking::Client::builder()
         .timeout(Duration::from_millis(200))
         .build()
         .unwrap_or_default();
     
-    for _ in 0..25 {
+    let deadline = Instant::now() + Duration::from_secs(7);
+    let mut backend_ready = false;
+    while Instant::now() < deadline {
         if probe_client.get("http://127.0.0.1:5865/api/dashboard/status").send().is_ok() {
+            backend_ready = true;
             break;
         }
         std::thread::sleep(Duration::from_millis(100));
+    }
+
+    if !backend_ready {
+        eprintln!("⚠️ Ultimatter gateway backend took longer than 7 seconds to initialize.");
     }
 
     // 4. Initialize native Tao Event Loop and Window
