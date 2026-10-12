@@ -5,6 +5,11 @@ All notable changes to Ultimatter will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.6] - 2026-10-13
+
+### Fixed
+* **AppImage Self-Contained Dependency Closure:** Implemented automated recursive dependency resolution (`ldd` + official AppImage `excludelist`) in `build-appimage.sh`. Automatically packages required WebKit2GTK secondary runtime libraries (including `libsoup-3.0`, `libwebpmux`, `libwebpdemux`, `libwoff2dec`, `libenchant-2`, `libsecret-1`, and font/image decoders) while preserving core host system drivers (`glibc`, `X11`, `OpenGL`). Guarantees standalone operation in minimal environments and sandboxes (e.g. Firejail).
+
 ## [1.1.5] - 2026-10-13
 
 ### Added

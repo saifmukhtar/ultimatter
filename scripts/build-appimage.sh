@@ -35,20 +35,21 @@ chmod 755 "${APP_DIR}/usr/bin/ultimatter-backend"
 echo "🌐 Dynamically bundling stable WebKit2GTK runtime..."
 LIB_SEARCH_PATHS="/usr/lib/x86_64-linux-gnu /usr/lib64 /usr/lib"
 
-for libname in "libwebkit2gtk-4.1.so" "libjavascriptcoregtk-4.1.so" "libwpe-1.0.so" "libWPEBackend-fdo-1.0.so"; do
+# 4a. Seed primary WebKit, JavaScriptCore, WPE and networking engines
+for libname in "libwebkit2gtk-4.1.so" "libjavascriptcoregtk-4.1.so" "libsoup-3.0.so" "libwpe-1.0.so" "libWPEBackend-fdo-1.0.so"; do
   for p in ${LIB_SEARCH_PATHS}; do
     matches=$(find "${p}" -maxdepth 2 -name "${libname}*" 2>/dev/null || true)
     if [ -n "${matches}" ]; then
       for m in ${matches}; do
         cp -d "${m}" "${APP_DIR}/usr/lib/" 2>/dev/null || cp "${m}" "${APP_DIR}/usr/lib/" 2>/dev/null || true
       done
-      echo "  -> Bundled ${libname}"
+      echo "  -> Bundled seed: ${libname}"
       break
     fi
   done
 done
 
-# Bundle WebKit Helper Executables (WebKitWebProcess, WebKitNetworkProcess, etc.)
+# 4b. Bundle WebKit Helper Executables (WebKitWebProcess, WebKitNetworkProcess, etc.)
 for helper_dir in "/usr/lib/x86_64-linux-gnu/webkit2gtk-4.1" "/usr/libexec/webkit2gtk-4.1" "/usr/lib64/webkit2gtk-4.1"; do
   if [ -d "${helper_dir}" ]; then
     echo "  -> Bundled WebKit helper processes from ${helper_dir}"
@@ -57,6 +58,37 @@ for helper_dir in "/usr/lib/x86_64-linux-gnu/webkit2gtk-4.1" "/usr/libexec/webki
   fi
 done
 
+# 4c. Automated Recursive Dependency Resolution (Option A)
+# Acquire official AppImage excludelist to avoid bundling core host-system libraries (glibc, X11, OpenGL drivers)
+EXCLUDE_LIST="${HOME}/.cache/ultimatter/excludelist"
+mkdir -p "$(dirname "${EXCLUDE_LIST}")"
+if [ ! -s "${EXCLUDE_LIST}" ]; then
+  curl -sL https://raw.githubusercontent.com/AppImage/AppImages/master/excludelist -o "${EXCLUDE_LIST}" 2>/dev/null || \
+  wget -q https://raw.githubusercontent.com/AppImage/AppImages/master/excludelist -O "${EXCLUDE_LIST}" 2>/dev/null || true
+fi
+
+echo "  -> Resolving secondary non-system dependencies for WebKit..."
+changed=1
+round=0
+while [ ${changed} -eq 1 ] && [ ${round} -lt 4 ]; do
+  changed=0
+  round=$((round + 1))
+  for target in $(find "${APP_DIR}/usr/lib" "${APP_DIR}/usr/libexec/webkit2gtk-4.1" -type f \( -name "*.so*" -o -executable \) 2>/dev/null); do
+    for dep in $(ldd "${target}" 2>/dev/null | grep -E "=> /" | awk '{print $3}'); do
+      [ -f "${dep}" ] || continue
+      dep_name=$(basename "${dep}")
+      if [ -s "${EXCLUDE_LIST}" ] && grep -q "^${dep_name}$" "${EXCLUDE_LIST}" 2>/dev/null; then
+        continue
+      fi
+      if [ ! -e "${APP_DIR}/usr/lib/${dep_name}" ]; then
+        cp -L "${dep}" "${APP_DIR}/usr/lib/${dep_name}" 2>/dev/null || true
+        changed=1
+      fi
+    done
+  done
+done
+echo "  -> Bundled WebKit runtime dependency closure ($(ls "${APP_DIR}/usr/lib" | wc -l) total libraries)"
+
 # Verify all mandatory WebKit components were found and copied
 if ! find "${APP_DIR}/usr/lib" -name "libwebkit2gtk-4.1.so*" -print -quit | grep -q .; then
   echo "❌ Error: Required libwebkit2gtk-4.1.so* was not found or failed to copy into AppDir!"
@@ -64,6 +96,10 @@ if ! find "${APP_DIR}/usr/lib" -name "libwebkit2gtk-4.1.so*" -print -quit | grep
 fi
 if ! find "${APP_DIR}/usr/lib" -name "libjavascriptcoregtk-4.1.so*" -print -quit | grep -q .; then
   echo "❌ Error: Required libjavascriptcoregtk-4.1.so* was not found or failed to copy into AppDir!"
+  exit 1
+fi
+if ! find "${APP_DIR}/usr/lib" -name "libsoup-3.0.so*" -print -quit | grep -q .; then
+  echo "❌ Error: Required libsoup-3.0.so* was not found or failed to copy into AppDir!"
   exit 1
 fi
 if [ ! -f "${APP_DIR}/usr/libexec/webkit2gtk-4.1/WebKitWebProcess" ] || [ ! -f "${APP_DIR}/usr/libexec/webkit2gtk-4.1/WebKitNetworkProcess" ]; then
