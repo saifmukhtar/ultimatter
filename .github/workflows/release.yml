@@ -128,17 +128,12 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path "dist"
-          New-Item -ItemType Directory -Force -Path "msix_stage\Assets"
+
+          # Safely stage manifest and visual assets with exact UTF-8 encoding
+          node scripts/prepare-msix.js
 
           Copy-Item "desktop\target\release\ultimatter.exe" -Destination "msix_stage\"
           Copy-Item "desktop\ultimatter-backend.exe" -Destination "msix_stage\"
-          Copy-Item "packaging\windows\Assets\*" -Destination "msix_stage\Assets\"
-
-          # Sync package version from package.json into AppxManifest.xml
-          $pkgVersion = (Get-Content package.json | ConvertFrom-Json).version
-          $msixVersion = "$pkgVersion.0"
-          Write-Host "Packaging MSIX version $msixVersion"
-          (Get-Content "packaging\windows\AppxManifest.xml") -replace 'Version="[^"]+"', "Version=""$msixVersion""" | Set-Content "msix_stage\AppxManifest.xml"
 
           # Locate MakeAppx.exe in Windows SDK
           $sdkPath = "C:\Program Files (x86)\Windows Kits\10\bin"
