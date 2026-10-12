@@ -19,6 +19,9 @@ mkdir -p "${APP_DIR}/usr/bin"
 mkdir -p "${APP_DIR}/usr/share/applications"
 mkdir -p "${APP_DIR}/usr/share/icons/hicolor/512x512/apps"
 
+mkdir -p "${APP_DIR}/usr/lib"
+mkdir -p "${APP_DIR}/usr/libexec/webkit2gtk-4.1"
+
 # 2. Copy native Rust GUI executable
 cp "${ROOT_DIR}/bin/ultimatter-linux-x64" "${APP_DIR}/usr/bin/ultimatter"
 chmod 755 "${APP_DIR}/usr/bin/ultimatter"
@@ -28,6 +31,37 @@ echo "📦 Compiling standalone gateway backend binary..."
 npx @yao-pkg/pkg "${ROOT_DIR}/bin/cli.js" --output "${APP_DIR}/usr/bin/ultimatter-backend" --targets node22-linux-x64
 chmod 755 "${APP_DIR}/usr/bin/ultimatter-backend"
 
+# 4. Dynamically Bundle Latest Stable WebKit2GTK Runtime & Helpers
+echo "🌐 Dynamically bundling stable WebKit2GTK runtime..."
+LIB_SEARCH_PATHS="/usr/lib/x86_64-linux-gnu /usr/lib64 /usr/lib"
+
+for libname in "libwebkit2gtk-4.1.so" "libjavascriptcoregtk-4.1.so" "libwpe-1.0.so" "libWPEBackend-fdo-1.0.so"; do
+  for p in ${LIB_SEARCH_PATHS}; do
+    matches=$(find "${p}" -maxdepth 2 -name "${libname}*" 2>/dev/null || true)
+    if [ -n "${matches}" ]; then
+      for m in ${matches}; do
+        cp -d "${m}" "${APP_DIR}/usr/lib/" 2>/dev/null || cp "${m}" "${APP_DIR}/usr/lib/" 2>/dev/null || true
+      done
+      echo "  -> Bundled ${libname}"
+      break
+    fi
+  done
+done
+
+# Bundle WebKit Helper Executables (WebKitWebProcess, WebKitNetworkProcess, etc.)
+for helper_dir in "/usr/lib/x86_64-linux-gnu/webkit2gtk-4.1" "/usr/libexec/webkit2gtk-4.1" "/usr/lib64/webkit2gtk-4.1"; do
+  if [ -d "${helper_dir}" ]; then
+    echo "  -> Bundled WebKit helper processes from ${helper_dir}"
+    cp -r "${helper_dir}/"* "${APP_DIR}/usr/libexec/webkit2gtk-4.1/" 2>/dev/null || true
+    break
+  fi
+done
+
+# Strip unneeded debug symbols to minimize squashfs size
+echo "✂️  Stripping unneeded symbols from bundled libraries..."
+find "${APP_DIR}/usr/lib" -type f -name "*.so*" -exec strip --strip-unneeded {} + 2>/dev/null || true
+find "${APP_DIR}/usr/libexec/webkit2gtk-4.1" -type f -executable -exec strip --strip-unneeded {} + 2>/dev/null || true
+
 cp "${ROOT_DIR}/assets/ultimatter.desktop" "${APP_DIR}/ultimatter.desktop"
 cp "${ROOT_DIR}/assets/ultimatter.desktop" "${APP_DIR}/usr/share/applications/ultimatter.desktop"
 
@@ -35,11 +69,19 @@ cp "${ROOT_DIR}/assets/icon.png" "${APP_DIR}/ultimatter.png"
 cp "${ROOT_DIR}/assets/icon.png" "${APP_DIR}/.DirIcon"
 cp "${ROOT_DIR}/assets/icon.png" "${APP_DIR}/usr/share/icons/hicolor/512x512/apps/ultimatter.png"
 
-# 3. Create Self-Integrating AppRun launcher
+# 5. Create Self-Integrating AppRun launcher
 cat << 'EOF' > "${APP_DIR}/AppRun"
 #!/bin/sh
 HERE="$(dirname "$(readlink -f "${0}")")"
 export PATH="${HERE}/usr/bin:${PATH}"
+
+# Configure Bundled WebKit Runtime & Library Path
+if [ -d "${HERE}/usr/lib" ]; then
+  export LD_LIBRARY_PATH="${HERE}/usr/lib:${LD_LIBRARY_PATH}"
+fi
+if [ -d "${HERE}/usr/libexec/webkit2gtk-4.1" ]; then
+  export WEBKIT_EXEC_PATH="${HERE}/usr/libexec/webkit2gtk-4.1"
+fi
 
 # Automatic Desktop & Icon Integration on First Launch
 if [ -n "${APPIMAGE}" ]; then
