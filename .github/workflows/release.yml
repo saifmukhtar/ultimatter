@@ -113,9 +113,6 @@ jobs:
       - name: Setup Rust toolchain
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Install cargo-wix
-        run: cargo install cargo-wix
-
       - name: Install dependencies
         run: npm ci || npm install
 
@@ -123,16 +120,31 @@ jobs:
         run: |
           npx @yao-pkg/pkg bin/cli.js --output desktop/ultimatter-backend.exe --targets node22-win-x64
 
-      - name: Build Rust GUI & MSI Installer
+      - name: Build Rust GUI
         working-directory: desktop
-        run: |
-          cargo build --release
-          cargo wix --nocapture --no-build -v
+        run: cargo build --release
 
-      - name: Stage release artifacts
+      - name: Build MSIX Package
+        shell: pwsh
         run: |
-          mkdir -p dist
-          copy desktop\target\wix\*.msi dist\Ultimatter-Windows-x64.msi
+          New-Item -ItemType Directory -Force -Path "dist"
+          New-Item -ItemType Directory -Force -Path "msix_stage\Assets"
+
+          Copy-Item "desktop\target\release\ultimatter.exe" -Destination "msix_stage\"
+          Copy-Item "desktop\ultimatter-backend.exe" -Destination "msix_stage\"
+          Copy-Item "packaging\windows\Assets\*" -Destination "msix_stage\Assets\"
+
+          # Sync package version from package.json into AppxManifest.xml
+          $pkgVersion = (Get-Content package.json | ConvertFrom-Json).version
+          $msixVersion = "$pkgVersion.0"
+          Write-Host "Packaging MSIX version $msixVersion"
+          (Get-Content "packaging\windows\AppxManifest.xml") -replace 'Version="[^"]+"', "Version=""$msixVersion""" | Set-Content "msix_stage\AppxManifest.xml"
+
+          # Locate MakeAppx.exe in Windows SDK
+          $sdkPath = "C:\Program Files (x86)\Windows Kits\10\bin"
+          $makeappx = (Get-ChildItem -Path $sdkPath -Filter "makeappx.exe" -Recurse | Where-Object { $_.FullName -match "\\x64\\makeappx.exe$" } | Select-Object -First 1).FullName
+          Write-Host "Found MakeAppx at: $makeappx"
+          & $makeappx pack /d msix_stage /p dist\Ultimatter-Windows-x64.msix /o /v
 
       - name: Upload Windows Artifacts
         uses: softprops/action-gh-release@v2
@@ -144,7 +156,7 @@ jobs:
           prerelease: false
           generate_release_notes: true
           files: |
-            dist/Ultimatter-Windows-x64.msi
+            dist/Ultimatter-Windows-x64.msix
 
   build-macos:
     name: Build macOS (${{ matrix.arch_name }})
