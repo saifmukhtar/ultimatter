@@ -1,6 +1,6 @@
 mod supervisor;
 
-use std::time::Duration;
+use std::time::{Duration, Instant};
 use supervisor::ProcessSupervisor;
 use tao::{
     dpi::LogicalSize,
@@ -65,14 +65,15 @@ Options:
     // Ensure background gateway daemon is running
     supervisor.ensure_gateway_running();
 
-    // Wait for port 5865 to be responsive if freshly spawned (up to 7 seconds)
+    // Wait for port 5865 to be responsive if freshly spawned (enforce strict 7-second deadline)
     let probe_client = reqwest::blocking::Client::builder()
         .timeout(Duration::from_millis(200))
         .build()
         .unwrap_or_default();
     
+    let deadline = Instant::now() + Duration::from_secs(7);
     let mut backend_ready = false;
-    for _ in 0..70 {
+    while Instant::now() < deadline {
         if probe_client.get("http://127.0.0.1:5865/api/dashboard/status").send().is_ok() {
             backend_ready = true;
             break;
