@@ -5,6 +5,13 @@ All notable changes to Ultimatter will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.4] - 2026-10-13
+
+### Added
+* **Windows MSIX Packaging:** Modernized Windows packaging to official containerized MSIX format (`Ultimatter-Windows-x64.msix`), generated natively via Windows SDK `MakeAppx.exe`.
+* **Microsoft Store Identity Integration:** Integrated verified Microsoft Partner Center Package Identity (`saifmukhtar.ultimatter`) and visual asset tiles (`Square44x44Logo`, `Square150x150Logo`, `Wide310x150Logo`, `StoreLogo`, `SplashScreen`) for direct Store submission.
+* **Automated CI/CD Dynamic Versioning:** Configured GitHub Actions to dynamically inject release versions from `package.json` directly into `AppxManifest.xml` during build.
+
 ## [1.1.3] - 2026-09-28
 
 ### Added
