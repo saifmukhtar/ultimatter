@@ -9,7 +9,7 @@
   <Identity
     Name="saifmukhtar.ultimatter"
     Publisher="CN=956875AE-D1DC-4B80-9925-4DA5CE9D08BA"
-    Version="1.1.6.0"
+    Version="1.1.7.0"
     ProcessorArchitecture="x64" />
 
   <Properties>

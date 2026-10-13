@@ -5,6 +5,12 @@ All notable changes to Ultimatter will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.7] - 2026-10-13
+
+### Fixed
+* **WebKit Process Spawn Redirection:** Introduced lightweight preload hook (`libwebkit_redirect.so`) to seamlessly redirect WebKit subprocess invocations (`WebKitNetworkProcess`, `WebKitWebProcess`, `WebKitGPUProcess`) from hardcoded compile-time system paths (`/usr/lib/x86_64-linux-gnu/webkit2gtk-4.1/`) to internal AppImage paths (`$APPDIR/usr/libexec/webkit2gtk-4.1/`).
+* **Injected Bundle Configuration:** Configured `WEBKIT_INJECTED_BUNDLE_PATH` in `AppRun` to eliminate web extension bundle loading failures.
+
 ## [1.1.6] - 2026-10-13
 
 ### Fixed

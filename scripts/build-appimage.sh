@@ -107,6 +107,10 @@ if [ ! -f "${APP_DIR}/usr/libexec/webkit2gtk-4.1/WebKitWebProcess" ] || [ ! -f "
   exit 1
 fi
 
+# 4d. Compile WebKit subprocess redirection preload hook
+echo "🔨 Compiling WebKit subprocess redirection preload hook..."
+gcc -shared -fPIC -O2 "${ROOT_DIR}/packaging/linux/webkit_redirect.c" -o "${APP_DIR}/usr/lib/libwebkit_redirect.so" -ldl
+
 # Strip unneeded debug symbols to minimize squashfs size
 echo "✂️  Stripping unneeded symbols from bundled libraries..."
 find "${APP_DIR}/usr/lib" -type f -name "*.so*" -exec strip --strip-unneeded {} + 2>/dev/null || true
@@ -129,8 +133,14 @@ export PATH="${HERE}/usr/bin:${PATH}"
 if [ -d "${HERE}/usr/lib" ]; then
   export LD_LIBRARY_PATH="${HERE}/usr/lib:${LD_LIBRARY_PATH}"
 fi
+if [ -f "${HERE}/usr/lib/libwebkit_redirect.so" ]; then
+  export LD_PRELOAD="${HERE}/usr/lib/libwebkit_redirect.so${LD_PRELOAD:+:${LD_PRELOAD}}"
+fi
 if [ -d "${HERE}/usr/libexec/webkit2gtk-4.1" ]; then
   export WEBKIT_EXEC_PATH="${HERE}/usr/libexec/webkit2gtk-4.1"
+fi
+if [ -d "${HERE}/usr/libexec/webkit2gtk-4.1/injected-bundle" ]; then
+  export WEBKIT_INJECTED_BUNDLE_PATH="${HERE}/usr/libexec/webkit2gtk-4.1/injected-bundle"
 fi
 
 # Automatic Desktop & Icon Integration on First Launch
